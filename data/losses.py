@@ -3,7 +3,6 @@ import numpy as np
 from sklearn.metrics import mean_squared_error as mse
 from data.data import VOCdataset
 from data.transforms import GridTransform
-from data.functions import convert_cellbox_to_boxes, intersection_over_union
 from keras import backend as K
 import tensorflow as tf
 
