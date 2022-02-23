@@ -1,0 +1,66 @@
+Observatii generale:
+-batch size mic la inceput, better
+-mai mult de 2048 neuroni=> OOM allocation error
+-last dense trebuie sigmoid, altfel cu linear ca in paper ul original obtin loss nan
+
+---- PANA ACUM RESNET DEZGHETAT
+
+----- INGHETAT BASE MODEL!!!
+
+----- pe fine tuning dezghetat blocuri doar
+
+---- adaugat regularizare
+
+---- incercat cu mai putine grid uri
+
+
+Experiment 1, 21 feb: 
+-dense head 2048,drop 0.5,elu
+-cnt lr 0.00001 
+-batch size 8
+-100 epoci
+-start: loss = 9.63,val_loss = 2.76,mae = 0.17,val_mae=0.155
+-end: loss = 0.06, val_loss = 1.48,mae = 0.145,val_mae=0.14
+--Observatii: overfit rapid pe la epoca 10
+
+Experiment 2, 22 feb: 
+-schimbat in loss object mask = true_obj cu object mask = best_iou * true_obj
+-dense head 2048,drop 0.5,leaky relu 0.1
+-cnt lr 0.0001 
+-batch size 16
+-100 epoci
+-start: loss = 4.19,val_loss = 2.11,mae = 0.198,val_mae=0.0811
+-end: loss = , val_loss = ,mae = ,val_mae=
+overfit rapid, inceput bun
+
+Experiment 3, 22 feb: 
+-schimbat in loss object mask = true_obj cu object mask = best_iou * true_obj
+-dense head 2048,drop 0.6,leaky relu 0.1
+-init lr 0.000001, epoch 60+ lr 0.00001,epoch 100+ lr 0.000001 
+-batch size 8
+-120 epoci
+-start: loss: 17.0641 - mae: 0.4596 - val_loss: 5.4862 - val_mae: 0.3679
+-end: loss: 0.0365 - mae: 0.0819 - val_loss: 1.1836 - val_mae: 0.0753
+Observatii: 
+-pe la epoca 25-30 incepe overfitting ul, la epoca 60 apare un mic salt in antrenare cand cred lr-ul, dar val_loss nu se modifica
+-MAE-ul scade constant si se reduce overfitul cand maresc in epoca 60 learning rate-ul 
+
+Experiment 4, 23 feb: 
+-schimbat in loss object mask = true_obj cu object mask = best_iou * true_obj
+-dense head 2048,drop 0.6,leaky relu 0.1
+-init lr 0.000001, epoch 30-60 lr 0.0001,epoch 60-100 lr 0.00001,epoch 100+ lr 0.000001 
+-batch size 8
+-120 epoci
+-start:
+-end: 
+Observatii: 
+
+
+
+Links:
+
+https://medium.com/@m.khan/implementing-yolo-using-resnet-as-feature-extractor-5857f9da5014
+
+https://github.com/makatx/YOLO_ResNet/blob/8f7b593e5232f8038a72eb52e920a97c207dd57c/model_continue_train.py#L294
+
+https://github.com/thtrieu/darkflow/issues/9
