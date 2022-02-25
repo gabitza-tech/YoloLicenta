@@ -8,8 +8,8 @@ Observatii generale:
 ---- adaugat regularizare
 ---- incercat cu mai putine grid uri -- paper 7x7x30
 ---- marit input size la 448x448
-----
-
+---- ADAUGAT LAMBDA_CLASS LA FUNCTIA CLASS_LOSS
+---- folosit ptr object mask best_iou*true_obj
 
 
 Experiment 1, 21 feb: 
