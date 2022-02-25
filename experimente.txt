@@ -2,16 +2,14 @@ Observatii generale:
 -batch size mic la inceput, better
 -mai mult de 2048 neuroni=> OOM allocation error
 -last dense trebuie sigmoid, altfel cu linear ca in paper ul original obtin loss nan
-
 ---- PANA ACUM RESNET DEZGHETAT
-
 ----- INGHETAT BASE MODEL!!!
-
 ----- pe fine tuning dezghetat blocuri doar
-
 ---- adaugat regularizare
+---- incercat cu mai putine grid uri -- paper 7x7x30
+---- marit input size la 448x448
+----
 
----- incercat cu mai putine grid uri
 
 
 Experiment 1, 21 feb: 
