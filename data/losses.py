@@ -22,7 +22,7 @@ class YoloLoss:
     def __init__(self):
         #self.mse = MeanSquaredError(reduction="sum")
         self.B = 2
-        self.no_grids = 6
+        self.no_grids = 7
         self.lambda_noobj = 0.5
         self.lambda_coord = 5.0
         self.lambda_class = 2.0
