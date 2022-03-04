@@ -20,17 +20,17 @@ classes = ['person' , 'bird', 'cat', 'cow',
            'diningtable', 'pottedplant', 'sofa', 'tvmonitor']
 
 # Get paths to the test images
-filetype = mimetypes.guess_type('output/test.txt')[0]
-imagePaths = ['output/test.txt']
+filetype = mimetypes.guess_type('output/train.txt')[0]
+imagePaths = ['output/train.txt']
 # if the file type is a text file, then we need to process *multiple*
 # images
 if "text/plain" == filetype:
 	# load the image paths in our testing file
-	imagePaths = open('output/test.txt').read().strip().split("\n")
+	imagePaths = open('output/train.txt').read().strip().split("\n")
 
 
 print("Load trained model")
-model = load_model('output/experiment3.hdf5', custom_objects = {"YoloLoss":YoloLoss})
+model = load_model('output/weights-best.hdf5', custom_objects = {"YoloLoss":YoloLoss})
 #plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
 
 no_grids=9
@@ -55,8 +55,9 @@ for (step,imagePath) in enumerate(imagePaths):
 
         boxPred = prediction[20:30,...]       
         classPred = prediction[:20,...]
-
-        image1 = cv2.imread(imagePaths)
-        image1 = imutils.resize(image1, width=600)
+        print(boxPred.shape)
+        image1 = cv2.imread(imagePath)
         (h, w) = image1.shape[:2]
-        GT.transform_from_grid(boxPred,classPred,h,w,image)
+        print(boxPred[0,...])
+        print(boxPred[5])
+        GT.transform_from_grid(boxPred,classPred,h,w,image1)
