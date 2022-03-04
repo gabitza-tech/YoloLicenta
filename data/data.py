@@ -82,8 +82,6 @@ class VOCdataset:
   	            #        0.65, (0, 255, 0), 2)
                 #cv2.rectangle(image,(bbox[1],bbox[2]),(bbox[3],bbox[4]),(0,255,0),1)
             image1 = load_img(imagePath, target_size=(224, 224))
-            #image1 = np.expand_dims(np.asarray(image1),axis=0)
-            #print(image1.shape)
             image1 = img_to_array(image1)
 
             self.bboxes.append(bboxes_per_image)
@@ -91,11 +89,7 @@ class VOCdataset:
             self.no_objects.append(no_objects_per_image)
             self.data.append(image1)
             self.imagePaths.append(imagePath)
-
-            #print(bboxes_per_image)
-            #print(labels_per_image)
-            #print(no_objects_per_image)
-                
+             
             #cv2.imshow('',image)
             #cv2.waitKey(0)
             
@@ -104,7 +98,7 @@ class VOCdataset:
             self.break_count = self.break_count+1
             if self.break_count%100 == 0:
                 print("INFO processed {}/17100 images".format(self.break_count))
-            if self.break_count == 1000:
+            if self.break_count == 100:
                 break
 
         # We want to calculate the maximum number of objects in an image so all the 
