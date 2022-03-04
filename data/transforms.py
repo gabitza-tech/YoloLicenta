@@ -1,4 +1,3 @@
-
 from data.data import VOCdataset
 import argparse
 import numpy as np
@@ -11,7 +10,7 @@ classes = ['person' , 'bird', 'cat', 'cow',
            'diningtable', 'pottedplant', 'sofa', 'tvmonitor']
 
 class GridTransform:
-    def __init__(self,B=2,no_grids=9):
+    def __init__(self,B=2,no_grids=7):
         self.bboxes_tr = []
         self.labels_tr = []
         self.no_grids = no_grids
@@ -82,7 +81,7 @@ class GridTransform:
             h_obj = bboxes[B*5+4,...]
             for (row,i) in enumerate(bboxes[B*5,...]):
                 for (col,j) in enumerate(i):
-                    if j != 0:
+                    if j > 0.1:
 
                         label_pos = np.argmax(labels[:20,row,col],axis=0)
                         class_name = classes[label_pos]
@@ -122,12 +121,11 @@ GT = GridTransform()
 bboxes_t,labels_t = GT.transform(data,bboxes,labels,no_objects)
 
 
-
 #Test transformare corecta
 
 no_grids=9
 for (step,imagePath) in enumerate(imagePaths):
-    if step == 10:
+    if step == 15:
         break
     else:
         image = cv2.imread(imagePath)
