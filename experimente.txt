@@ -37,7 +37,6 @@ overfit rapid, inceput bun
 
 Experiment 3, 22 feb:
 -dezghetat tot
--schimbat in loss object mask = true_obj cu object mask = best_iou * true_obj
 -dense head 2048,drop 0.6,leaky relu 0.1
 -init lr 0.000001, epoch 60+ lr 0.00001,epoch 100+ lr 0.000001 
 -batch size 8
@@ -50,7 +49,6 @@ Observatii:
 
 Experiment 4, 23 feb: 1645614923
 -dezghetat tot
--schimbat in loss object mask = true_obj cu object mask = best_iou * true_obj
 -dense head 2048,drop 0.6,leaky relu 0.1
 -init lr 0.000001, epoch 30-60 lr 0.0001,epoch 60-100 lr 0.00001,epoch 100+ lr 0.000001 
 -batch size 8
@@ -59,7 +57,18 @@ Experiment 4, 23 feb: 1645614923
 -end: train_loss:0.03,val_loss=1.49, maetrain=0.083,maeval=0.07
 Observatii: La epoca 30 cand cresc lr la 0.0001=> yololoss ul creste f mult si se stabilizeaza pe la epoca 60 cand il cad la 0.00001. Se face overfit ca inainte pe la epoca 30. Varianta asta nu elimina overfitul.
 
+Experiment 5, 8 mar: 
+-inghetat baza resnet50
+-schimbat no_grids=7 (de la 9 griduri la 7)
+-dense head 2048,drop 0.6,leaky relu 0.1
+-init lr 0.000001
+-batch size 16
+-140 epoci
+-start: loss: 12.8634 - mae: 0.4491 - val_loss: 4.3763 - val_mae: 0.3497
+-end: train_loss:0.03,val_loss=1.49, maetrain=0.083,maeval=0.07
+Observatii: 
 
+Recomandari: incercat next cu batch size de 32, apoi revenit la batch size mic si lr de 0.0001/0.001
 
 Links:
 
