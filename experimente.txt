@@ -65,8 +65,19 @@ Experiment 5, 8 mar:
 -batch size 16
 -140 epoci
 -start: loss: 12.8634 - mae: 0.4491 - val_loss: 4.3763 - val_mae: 0.3497
--end: train_loss:0.03,val_loss=1.49, maetrain=0.083,maeval=0.07
-Observatii: 
+-end: epoca 40, loss: 2.4692 - mae: 0.1728 - val_loss: 2.2510 - val_mae: 0.1674
+Observatii: Parea ca incepe sa faca platou la epoca 40 si lossul era mai mare decat celelalte configuratii la epoca 40
+
+Experiment 6, 8 mar: 
+-inghetat baza resnet50
+-schimbat no_grids=7 (de la 9 griduri la 7)
+-dense head 2048,drop 0.6,leaky relu 0.1
+-init lr 0.001
+-batch size 32
+-160 epoci
+-start: loss: 
+-end: 
+Observatii: Parea ca incepe sa faca platou
 
 Recomandari: incercat next cu batch size de 32, apoi revenit la batch size mic si lr de 0.0001/0.001
 
