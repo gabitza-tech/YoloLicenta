@@ -10,9 +10,12 @@ Observatii generale:
 ---- marit input size la 448x448
 ---- ADAUGAT LAMBDA_CLASS LA FUNCTIA CLASS_LOSS
 ---- folosit ptr object mask best_iou*true_obj
+Recomandari:
+-- minim 2000 iteratii * no classes
+-- minim 1000-2000 de imagini pe clasa
 
-
-Experiment 1, 21 feb: 
+Experiment 1, 21 feb: 1645470914
+-dezghetat tot
 -dense head 2048,drop 0.5,elu
 -cnt lr 0.00001 
 -batch size 8
@@ -21,7 +24,8 @@ Experiment 1, 21 feb:
 -end: loss = 0.06, val_loss = 1.48,mae = 0.145,val_mae=0.14
 --Observatii: overfit rapid pe la epoca 10
 
-Experiment 2, 22 feb: 
+Experiment 2, 22 feb: 1645556152
+-dezghetat tot
 -schimbat in loss object mask = true_obj cu object mask = best_iou * true_obj
 -dense head 2048,drop 0.5,leaky relu 0.1
 -cnt lr 0.0001 
@@ -31,7 +35,8 @@ Experiment 2, 22 feb:
 -end: loss = , val_loss = ,mae = ,val_mae=
 overfit rapid, inceput bun
 
-Experiment 3, 22 feb: 
+Experiment 3, 22 feb:
+-dezghetat tot
 -schimbat in loss object mask = true_obj cu object mask = best_iou * true_obj
 -dense head 2048,drop 0.6,leaky relu 0.1
 -init lr 0.000001, epoch 60+ lr 0.00001,epoch 100+ lr 0.000001 
@@ -43,15 +48,16 @@ Observatii:
 -pe la epoca 25-30 incepe overfitting ul, la epoca 60 apare un mic salt in antrenare cand cred lr-ul, dar val_loss nu se modifica
 -MAE-ul scade constant si se reduce overfitul cand maresc in epoca 60 learning rate-ul 
 
-Experiment 4, 23 feb: 
+Experiment 4, 23 feb: 1645614923
+-dezghetat tot
 -schimbat in loss object mask = true_obj cu object mask = best_iou * true_obj
 -dense head 2048,drop 0.6,leaky relu 0.1
 -init lr 0.000001, epoch 30-60 lr 0.0001,epoch 60-100 lr 0.00001,epoch 100+ lr 0.000001 
 -batch size 8
 -120 epoci
 -start:
--end: 
-Observatii: 
+-end: train_loss:0.03,val_loss=1.49, maetrain=0.083,maeval=0.07
+Observatii: La epoca 30 cand cresc lr la 0.0001=> yololoss ul creste f mult si se stabilizeaza pe la epoca 60 cand il cad la 0.00001. Se face overfit ca inainte pe la epoca 30. Varianta asta nu elimina overfitul.
 
 
 
