@@ -138,11 +138,11 @@ Experiment 10, 9 mar:
 
 Experiment 11 , 8 mar: 
 -inghetat baza resnet50
--schimbat no_grids=7 (de la 9 griduri la 7)
--dense head 2048,drop 0.5,leaky relu 0.1
--init lr 0.0001
+-lambda noobj si coord schimbat la 10
+-schimbat no_grids=9-dense head 2048,drop 0.5,leaky relu 0.1
+-init lr 0.0003 pana la 70,70-100 0.00001, 100+ 0.000001
 -batch size 16
--15 epoci
+-140 epoci
 -start:
 -end: 
 
