@@ -100,8 +100,51 @@ Experiment 8, 8 mar:
 -batch size 32
 -160 epoci
 -start: 
+-end: loss: 1.9843 - mae: 0.1206 - val_loss: 2.5690 - val_mae: 0.1125
+Observatii:  nu invata
+
+Experiment 9, 9 mar: 
+-inghetat baza resnet50
+-schimbat no_grids=7 (de la 9 griduri la 7)
+-dense head 4096,drop 0.6,leaky relu 0.1
+-init lr 0.00001
+-batch size 32
+-160 epoci
+-start: 
 -end: 
-Observatii:  platou la primele epoci
+Observatii:  nu pare bine
+
+Experiment 9, 9 mar: 
+-inghetat baza resnet50
+-schimbat no_grids=7 (de la 9 griduri la 7)
+-dense head 4096,drop 0.6,leaky relu 0.1
+-init lr 0.00001
+-batch size 32
+-160 epoci
+-start: 
+-end: 
+Observatii:  nu pare bine
+
+
+Experiment 10, 9 mar: 
+-inghetat baza resnet50
+-schimbat no_grids=7/9/11 (de la 9 griduri la 7)
+-dense head 2048,drop 0.5,leaky relu 0.1,linear output
+-init lr 0.001/0.0001/0.00001/0.000001
+-batch size 64
+-15 epoci
+-start: 
+-end: nan
+
+Experiment 11 , 8 mar: 
+-inghetat baza resnet50
+-schimbat no_grids=7 (de la 9 griduri la 7)
+-dense head 2048,drop 0.5,leaky relu 0.1
+-init lr 0.0001
+-batch size 16
+-15 epoci
+-start:
+-end: 
 
 Recomandari: incercat next cu batch size de 32, apoi revenit la batch size mic si lr de 0.0001/0.001
 
