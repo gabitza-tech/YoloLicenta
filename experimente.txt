@@ -146,16 +146,36 @@ Experiment 11 , 8 mar:
 -start:
 -end: nu invata 
 
-Experiment 11 , 8 mar: 
+Experiment 12 , 10 mar: 
 -inghetat baza resnet50
 -lambda noobj si coord schimbat la 10
 -schimbat no_grids=9-dense head 4096,drop 0.5,leaky relu 0.1
--init lr 0.0003 pana la 70,70-100 0.00001, 100+ 0.000001
+-init lr 0.0003 pana la 70,70-200 0.00001, 200+ 0.000001
 -batch size 16
--140 epoci
+-300 epoci
 -start:
--end: 
+-end: ramane blocat la 2.3,
 
+
+Experiment 11 ,10 mar: 
+-inghetat baza resnet50
+-lambda noobj si coord schimbat la 10
+-schimbat no_grids=9-dense head 4096,drop 0.5,leaky relu 0.1
+-init lr 0.001
+-batch size 32
+-15 epoci
+-start:
+-end: ramane blocat la 2.7 f repede
+
+Experiment 12 ,10 mar: 
+-inghetat baza resnet50
+-lambda noobj si coord schimbat la 0.5 si 5
+-schimbat no_grids=9-dense head 4096,leaky relu 0.1
+-init lr 0.001/0.0001
+-batch size 32
+-15 epoci
+-start:
+-end: 0.001,0.0001-- nu invata blocat la loss=5 ambele
 
 Recomandari: incercat next cu batch size de 32, apoi revenit la batch size mic si lr de 0.0001/0.001
 
