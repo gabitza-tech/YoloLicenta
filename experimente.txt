@@ -177,6 +177,17 @@ Experiment 12 ,10 mar:
 -start:
 -end: 0.001,0.0001-- nu invata blocat la loss=5 ambele
 
+
+Experiment 13 ,10 mar: 
+-inghetat baza resnet50
+-lambda noobj si coord schimbat la 0.5 si 5
+-schimbat no_grids=9-dense head 4096,leaky relu 0.1
+-init lr 0.00001
+-batch size 32
+-350-400 epoci
+-start:
+-end: 
+
 Recomandari: incercat next cu batch size de 32, apoi revenit la batch size mic si lr de 0.0001/0.001
 
 Links:
