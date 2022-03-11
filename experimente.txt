@@ -186,7 +186,7 @@ Experiment 13 ,10 mar:
 -batch size 32
 -350-400 epoci
 -start:
--end: 
+-end: loss: 0.0937 - mae: 0.1189 - val_loss: 1.8871 - val_mae: 0.1196
 
 Recomandari: incercat next cu batch size de 32, apoi revenit la batch size mic si lr de 0.0001/0.001
 
