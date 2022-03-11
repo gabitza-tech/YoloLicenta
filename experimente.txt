@@ -184,7 +184,7 @@ Experiment 13 ,10 mar:
 -schimbat no_grids=9-dense head 4096,leaky relu 0.1
 -init lr 0.00001
 -batch size 32
--350-400 epoci
+-350-400 epoci + 100
 -start:
 -end: loss: 0.0937 - mae: 0.1189 - val_loss: 1.8871 - val_mae: 0.1196
 
