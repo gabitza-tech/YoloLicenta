@@ -195,6 +195,7 @@ Experiment 14 ,10-16 mar:
 -lambda noobj si coord schimbat la 0.5 si 5, obj la 5
 -schimbat no_grids=7-dense head 2048,leaky relu 0.1
 -learning_rate=0.5e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0
+-no drop
 -batch size 16
 -400 epoci 
 -start:
