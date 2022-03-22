@@ -214,8 +214,8 @@ Experiment 15 ,22 mar:
 - dezghetat tot
 - totu la fel 
 - 250 epoci
-Recomandari: incercat next cu batch size de 32, apoi revenit la batch size mic si lr de 0.0001/0.001
 
+OBS: AM SCHIMBAT IN TRANSFORMS DE LA 25 la 30 forma sa fie la fel ca de la 21 la 25
 Links:
 
 https://medium.com/@m.khan/implementing-yolo-using-resnet-as-feature-extractor-5857f9da5014
