@@ -190,6 +190,18 @@ Experiment 13 ,10 mar:
 
 Recomandari: incercat next cu batch size de 32, apoi revenit la batch size mic si lr de 0.0001/0.001
 
+Experiment 14 ,10-16 mar: 
+-inghetat baza resnet50
+-lambda noobj si coord schimbat la 0.5 si 5, obj la 5
+-schimbat no_grids=7-dense head 2048,leaky relu 0.1
+-learning_rate=0.5e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0
+-batch size 16
+-400 epoci 
+-start:
+-end: loss: loss: 0.3184 - mae: 0.1230 - val_loss: 3.3264 - val_mae: 0.1260
+
+Recomandari: incercat next cu batch size de 32, apoi revenit la batch size mic si lr de 0.0001/0.001
+
 Links:
 
 https://medium.com/@m.khan/implementing-yolo-using-resnet-as-feature-extractor-5857f9da5014
