@@ -201,6 +201,16 @@ Experiment 14 ,10-16 mar:
 -start:
 -end: loss: loss: 0.3184 - mae: 0.1230 - val_loss: 3.3264 - val_mae: 0.1260
 
+Experiment 15 ,22 mar: 
+-inghetat baza resnet50
+-lambda noobj si coord schimbat la 1 si 5, obj la 1,cls 2
+-schimbat no_grids=7-dense head 2048,leaky relu 0.1, drop 0.5
+-learning_rate=1e-6 constant
+-batch size 8
+-250 epoci 
+-start:
+-end: loss: 
+
 Recomandari: incercat next cu batch size de 32, apoi revenit la batch size mic si lr de 0.0001/0.001
 
 Links:
