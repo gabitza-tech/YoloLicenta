@@ -213,7 +213,8 @@ Experiment 15 ,22 mar:
 /// continuare fine tune
 - dezghetat tot
 - totu la fel 
-- 250 epoci
+- 192 epoci
+- end:  loss: 2.3658 - mae: 0.1480 - val_loss: 5.5707 - val_mae: 0.1375
 
 OBS: AM SCHIMBAT IN TRANSFORMS DE LA 25 la 30 forma sa fie la fel ca de la 21 la 25
 Links:
