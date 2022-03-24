@@ -238,6 +238,7 @@ Experiment 17, 24.03:
 NEXT:
 -incercat sa schimb in loss object_delta si sa schimb din sum ptr toate imaginile in MEAN !!
 -incercat cu 4096 neuroni
+- facut warm si obtinut un model cu loss cat mai mic si dupa fine tune si dezghetat pe rand cate un bloc/doua/trei/toate reteaua
 
 OBS: AM SCHIMBAT IN TRANSFORMS DE LA 25 la 30 forma sa fie la fel ca de la 21 la 25
 Links:
