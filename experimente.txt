@@ -235,6 +235,9 @@ Experiment 17, 24.03:
 - epoci 
 - lr 0.00001 ( cu 0.001,0.0001 nu a mers prea bine, scadea incet )
 - end: 
+NEXT:
+-incercat sa schimb in loss object_delta si sa schimb din sum ptr toate imaginile in MEAN !!
+-incercat cu 4096 neuroni
 
 OBS: AM SCHIMBAT IN TRANSFORMS DE LA 25 la 30 forma sa fie la fel ca de la 21 la 25
 Links:
