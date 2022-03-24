@@ -227,6 +227,14 @@ Experiment 16, 24.03:
 Epoch 100/250
 1542/1542 [==============================] - 459s 298ms/step - loss: 8.6825 - mae: 1.4237 - val_loss: 47.8476 - val_mae: 1.3022
 
+Experiment 17, 24.03:
+- dezghetat tot, 2048 dense, leaky 0.1, drop 0.6, output sigmoid
+-no_grids 7
+- functie loss normala cu sum peste toate imaginile
+- batch 16
+- epoci 
+- lr 0.00001 ( cu 0.001,0.0001 nu a mers prea bine, scadea incet )
+- end: 
 
 OBS: AM SCHIMBAT IN TRANSFORMS DE LA 25 la 30 forma sa fie la fel ca de la 21 la 25
 Links:
