@@ -216,6 +216,18 @@ Experiment 15 ,22 mar:
 - 192 epoci
 - end:  loss: 2.3658 - mae: 0.1480 - val_loss: 5.5707 - val_mae: 0.1375
 
+Experiment 16, 24.03:
+- dezghetat tot, 2048 dense, leaky 0.1, drop 0.6, output linear
+-no_grids 7
+- schimbat functia loss: ptr bbox si confidence am pus tf.nn.sigmoid ca transformare si pentru clase am pus tf.nn.softmax, in rest am pastrat calculul loss-ului la fel
+- batch 8 
+- epoci 100
+-lr 0.00001
+- end: Epoch 00099: loss did not improve from 8.87421
+Epoch 100/250
+1542/1542 [==============================] - 459s 298ms/step - loss: 8.6825 - mae: 1.4237 - val_loss: 47.8476 - val_mae: 1.3022
+
+
 OBS: AM SCHIMBAT IN TRANSFORMS DE LA 25 la 30 forma sa fie la fel ca de la 21 la 25
 Links:
 
