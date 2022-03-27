@@ -67,12 +67,12 @@ class VOCdataset:
             #(h1,w1) = image.shape[:2]
             # get the label for each box in an image and the scaled coordinates between [0,1] of the bboxes in an image 
             for bbox in bboxes_image:
-                w=bbox[5]
-                h=bbox[6]
+                w_image=bbox[5]
+                h_image=bbox[6]
                 label_bbox1 = bbox[0]
                 label_bbox = classes.index(label_bbox1)
                 center_x,center_y, width,height = self.center_and_hw(bbox[1],bbox[2],bbox[3],bbox[4])
-                center_x,center_y, width,height = round(center_x/w,3),round(center_y/h,3), round(width/w,3),round(height/h,3) ## we normalise the coordinates of the bboxes
+                center_x,center_y, width,height = round(center_x/w_image,3),round(center_y/h_image,3), round(width/w_image,3),round(height/h_image,3) ## we normalise the coordinates of the bboxes
                 bboxes_per_image.append([center_x,center_y, width,height])
                 labels_per_image.append(label_bbox)
                 no_objects_per_image = no_objects_per_image + 1
@@ -98,8 +98,8 @@ class VOCdataset:
             self.break_count = self.break_count+1
             if self.break_count%100 == 0:
                 print("INFO processed {}/17100 images".format(self.break_count))
-            if self.break_count == 100:
-                break
+            #if self.break_count == 100:
+                #break
 
         # We want to calculate the maximum number of objects in an image so all the 
         # entries in the network have the same shape in order to transform them in numpy arrays
