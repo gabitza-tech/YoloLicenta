@@ -43,6 +43,7 @@ for (step,imagePath) in enumerate(imagePaths):
         break
     else:
         start = time.time()
+        
         # load the input image (in Keras format) from disk and preprocess
         # it, scaling the pixel intensities to the range [0, 1]
         image = load_img(imagePath, target_size=(224, 224))
@@ -50,20 +51,17 @@ for (step,imagePath) in enumerate(imagePaths):
         image = np.expand_dims(image, axis=0)
         # predict the bounding box of the object along with the class label
         prediction = model.predict(image)
-        fps_inference.append(1/(time.time() - start))
-        #print(prediction.shape)
+        
         prediction = np.reshape(prediction[0],(30,no_grids,no_grids))
-        #print(prediction.shape)
+        
         boxPred = prediction[20:30,...]       
         classPred = prediction[:20,...]
-        #print(boxPred.shape)
+        
         image1 = cv2.imread(imagePath)
-        (h, w) = image1.shape[:2]
-        #print(boxPred[0,...])
-        #print(boxPred[5])
         output_path = 'images_pred/test_nms/image_{}.jpg'.format(step)
-        #GT.transform_from_grid(boxPred,classPred,h,w,image1,output_path)
-        GT.transform_with_nms(boxPred,classPred,h,w,image1,output_path)
+        #GT.transform_from_grid(boxPred,classPred,image1,output_path)
+        GT.transform_with_nms(boxPred,classPred,image1,output_path)
+        
         fps_inference.append(1/(time.time() - start))
 print("Mean FPS value of inference is: {}".format(sum(fps_inference)/len(fps_inference)))    
         
