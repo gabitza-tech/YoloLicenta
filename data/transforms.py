@@ -151,12 +151,13 @@ class GridTransform:
         nms_list = np.asarray(nms_list)
         return nms_list, positions
 
-    def transform_with_nms(self,bboxes,labels,h,w,image,output_path,conf_thresh = 0.7,nms_iou_cutoff = 0.15):
-        M = h//self.no_grids
-        N = w//self.no_grids
+    def transform_with_nms(self,bboxes,labels,image,output_path,conf_thresh = 0.7,nms_iou_cutoff = 0.15):
+        (h_img, w_img) = image.shape[:2]
+        M = h_img//self.no_grids
+        N = w_img//self.no_grids
 
         for y in range(0,h,M):
-            for x in range(0, w, N):
+            for x in range(0, w_img, N):
                 y1 = y + M
                 x1 = x + N
                 tiles = image[y:y+M,x:x+N]
@@ -203,16 +204,16 @@ class GridTransform:
             cX_imag = col/self.no_grids + cx/self.no_grids
             cY_imag = row/self.no_grids + cy/self.no_grids
 
-            startX = int((cX_imag-w_obj/2)*w)
-            startY = int((cY_imag-h_obj/2)*h)
-            endX = int((cX_imag+w_obj/2)*w)
-            endY = int((cY_imag+h_obj/2)*h)
+            startX = int((cX_imag-w_obj/2)*w_img)
+            startY = int((cY_imag-h_obj/2)*h_img)
+            endX = int((cX_imag+w_obj/2)*w_img)
+            endY = int((cY_imag+h_obj/2)*h_img)
             #print(startX,startY,endX,endY,cX_imag,cY_imag)
             
             # draw the predicted boundi]\
             # ng box and class label on the image
             y = startY - 10 if startY - 10 > 10 else startY + 10
-            image = cv2.circle(image, (int(cX_imag*w),int(cY_imag*h)), radius=3, color=(0, 0, 255), thickness=-1)
+            image = cv2.circle(image, (int(cX_imag*w_img),int(cY_imag*h_img)), radius=3, color=(0, 0, 255), thickness=-1)
             cv2.rectangle(image, (startX, startY), (endX, endY),
                 (0, 255, 0), 2)
             cv2.putText(image, "{}:{:.2f} ".format(class_name,class_score), (startX, y), cv2.FONT_HERSHEY_SIMPLEX,	0.65, (0, 255, 0), 2)
@@ -221,7 +222,8 @@ class GridTransform:
         cv2.waitKey(0)
         cv2.destroyAllWindows()     
     
-    def transform_from_grid(self,bboxes,labels,h,w,image,output_path):
+    def transform_from_grid(self,bboxes,labels,image,output_path):
+        (h, w) = image.shape[:2]
         M = h//self.no_grids
         N = w//self.no_grids
 
