@@ -23,21 +23,19 @@ class YoloLoss:
         #self.mse = MeanSquaredError(reduction="sum")
         self.B = 2
         self.no_grids = 7
+        self.lambda_obj = 1.0
         self.lambda_noobj = 0.5
         self.lambda_coord = 5.0
         self.lambda_class = 2.0
         self.ious = []
+        self.print_loss = True
 
     def calc_iou(self, boxes1, boxes2, scope='iou'):
         """calculate ious
-        Args:
-          boxes1: 4-D tensor [CELL_SIZE, CELL_SIZE, BOXES_PER_CELL, 4]  ====> (x_center, y_center, w, h)
-          boxes2: 1-D tensor [CELL_SIZE, CELL_SIZE, BOXES_PER_CELL, 4] ===> (x_center, y_center, w, h)
-        Return:
-          iou: 3-D tensor [CELL_SIZE, CELL_SIZE, BOXES_PER_CELL]
         """
+        
         with tf.compat.v1.variable_scope(scope):
-            
+            # transform boxes from (cx,cy,w,h) format to (x1,y1,x2,y2) format
             boxes1 = tf.stack([boxes1[:, 0,...] - boxes1[:, 2,...] / 2.0,
                                boxes1[:, 1,...] - boxes1[:, 3,...] / 2.0,
                                boxes1[:, 0,...] + boxes1[:, 2,...] / 2.0,
@@ -47,7 +45,7 @@ class YoloLoss:
                                boxes2[:, 1,...] - boxes2[:, 3,...] / 2.0,
                                boxes2[:, 0,...] + boxes2[:, 2,...] / 2.0,
                                boxes2[:, 1,...] + boxes2[:, 3,...] / 2.0],axis=1)
-            #boxes2 = tf.transpose(boxes2, [1, 2, 3, 4, 0])
+            
             
             # debug bun pana aici
             # calculate the left up point & right down point
@@ -71,7 +69,6 @@ class YoloLoss:
             # debug bun
         return tf.clip_by_value(inter_square / union_square, 0.0, 1.0)
 
-
     def __call__(self,y_true,y_pred):
         
         y_pred = tf.reshape(y_pred,[-1,30,self.no_grids,self.no_grids])
@@ -79,13 +76,13 @@ class YoloLoss:
         
         #debug uit functioneaza reshape-ul cum trebuie atat ptr groundtruth cat si pentru prediction uri
 
-        pred_class = y_pred[:,:20,...]
-        pred_box = tf.concat((y_pred[:,21:25,...],y_pred[:,26:30,...]),axis=1)
-        pred_obj = tf.reshape(tf.concat((y_pred[:,20,...],y_pred[:,25,...]),axis=1),[-1,2,self.no_grids,self.no_grids])
+        pred_class = y_pred[:,:20,...] #batch, 20, 6, 6
+        pred_box = tf.concat((y_pred[:,21:25,...],y_pred[:,26:30,...]),axis=1) # batch, 8 ,6 ,6
+        pred_obj = tf.reshape(tf.concat((y_pred[:,20,...],y_pred[:,25,...]),axis=1),[-1,2,self.no_grids,self.no_grids]) # batch, 2, 6, 6
 
-        true_class = y_true[:,:20,...]
-        true_box = y_true[:,21:25,...]
-        true_obj = tf.reshape(y_true[:,20,...],[-1,1,self.no_grids,self.no_grids])
+        true_class = y_true[:,:20,...] #batch, 20,6,6
+        true_box = y_true[:,21:25,...] #batch, 4, 6, 6
+        true_obj = tf.reshape(y_true[:,20,...],[-1,1,self.no_grids,self.no_grids]) # batch, 1, 6, 6
         
         #debug uit functioneaza partajarea pe functionalitati
         
@@ -95,6 +92,26 @@ class YoloLoss:
 
         #offsetul e bun
 
+        box1 = tf.stack([(pred_box[:, 0, ...] + offset) / self.no_grids,
+                                       (pred_box[:, 1,...] + offset) / self.no_grids,
+                                       pred_box[:, 2,...],
+                                       pred_box[:, 3,...]],axis=1)
+
+        box2 = tf.stack([(pred_box[:, 4, ...] + offset) / self.no_grids,
+                                       (pred_box[:, 5,...] + offset) / self.no_grids,
+                                       pred_box[:, 6,...],
+                                       pred_box[:, 7,...]],axis=1)
+
+        reg_label = tf.stack([(true_box[:, 0, ...] + offset) / self.no_grids,
+                                       (true_box[:, 1,...] + offset) / self.no_grids,
+                                       true_box[:, 2,...],
+                                       true_box[:, 3,...]],axis=1)  # batchsize, 4,grid,grid
+        
+        iou_box1 = self.calc_iou(box1, reg_label) # batchsize,grid,grid
+        iou_box2 = self.calc_iou(box2, reg_label) # batchsize,grid,grid
+        
+        """
+#### INCERCAT FARA OFFSET BBOX LOSS
         regression_box1 = tf.stack([(pred_box[:, 0, ...] + offset) / self.no_grids,
                                        (pred_box[:, 1,...] + offset) / self.no_grids,
                                        tf.sqrt(pred_box[:, 2,...]),
@@ -109,15 +126,21 @@ class YoloLoss:
                                        (true_box[:, 1,...] + offset) / self.no_grids,
                                        tf.sqrt(true_box[:, 2,...]),
                                        tf.sqrt(true_box[:, 3,...])],axis=1)  # batchsize, 4,grid,grid
+"""
+        regression_box1 = tf.stack([pred_box[:, 0, ...] ,
+                                              pred_box[:, 1,...],
+                                              tf.sqrt(pred_box[:, 2,...]),
+                                              tf.sqrt(pred_box[:, 3,...])],axis=1)
 
-        # regression labels and predictions debug bun
+        regression_box2 = tf.stack([pred_box[:, 4, ...],
+                                        pred_box[:, 5,...] ,
+                                        tf.sqrt(pred_box[:, 6,...]),
+                                        tf.sqrt(pred_box[:, 7,...])],axis=1)
 
-        iou_box1 = self.calc_iou(regression_box1, regression_label) # batchsize,grid,grid
-        iou_box2 = self.calc_iou(regression_box2, regression_label) # batchsize,grid,grid
-
-        #x = K.print_tensor(iou_box1[0])
-        #x1 = K.print_tensor(iou_box2[0])
-        # debug bun pana aici!
+        regression_label = tf.stack([true_box[:, 0, ...] ,
+                                        true_box[:, 1,...],
+                                        tf.sqrt(true_box[:, 2,...]),
+                                        tf.sqrt(true_box[:, 3,...])],axis=1)  # batchsize, 4,grid,grid
 
         bestbox = tf.math.argmax((iou_box1,iou_box2),axis=0) #batchsize, grid, grid
         
@@ -130,24 +153,17 @@ class YoloLoss:
         best_has_obj = tf.add(tf.multiply(tf.cast(tf.subtract(1,tf.cast(tf.expand_dims(bestbox,axis=1),dtype=tf.int32)),dtype=tf.float32),tf.expand_dims(pred_obj[:,0,...],axis=1)),tf.cast(tf.multiply(tf.cast(tf.expand_dims(bestbox,axis=1),dtype=tf.float32),tf.expand_dims(pred_obj[:,1,...],axis=1)),dtype=tf.float32))
         #debug bun pana aici
         
-        object_mask = true_obj#best_iou * true_obj
-
-        #x1 = K.print_tensor(tf.shape(object_mask))
-        #x2 = K.print_tensor(best_iou[0])
-        #x = K.print_tensor(best_has_obj[0])
-        #x3 = K.print_tensor(true_obj[0])
+        
 
         """
         BOX COORDINATE LOSS/REGRESSION LOSS
         """
-        boxes_delta = object_mask * (regression_label-best_regression_box)
-        
-        #debug bun
+        boxes_delta = true_obj * (regression_label-best_regression_box)
 
-        #32,4,6,6
+        #batch,4,6,6
 
-        coord_loss = tf.reduce_mean(tf.reduce_sum(tf.square(boxes_delta),axis=[3,2,1]),name='coord_loss')*self.lambda_coord
-        #print("coord loss:{}".format(coord_loss))
+        coord_loss =tf.reduce_sum(tf.square(boxes_delta),axis=[3,2,1,0])*self.lambda_coord
+        print("coord loss:{}".format(coord_loss))
         #x = K.print_tensor(coord_loss)
         
         #debug bun
@@ -159,8 +175,8 @@ class YoloLoss:
         
         #debug bun 
         
-        cls_loss = tf.reduce_mean(tf.reduce_sum(tf.square(class_delta),axis=[3,2,1]),name='cls_loss')
-        #print("class los:{}".format(cls_loss))
+        cls_loss = tf.reduce_sum(tf.square(class_delta),axis=[3,2,1,0])*self.lambda_class
+        print("class los:{}".format(cls_loss))
         #x = K.print_tensor(cls_loss)
         
         #debug bun
@@ -168,26 +184,32 @@ class YoloLoss:
         OBJECT AND NO OBJECT LOSS
         """
 
+        object_mask = best_iou * true_obj#true_obj#
         noobject_mask = tf.ones_like(object_mask, dtype=tf.float32) - object_mask
-
-        object_delta = object_mask * (best_iou - best_has_obj)#object_mask * (true_obj - best_has_obj)
-
+                
+        object_delta = true_obj*(object_mask - best_has_obj)#object_mask * (true_obj - best_has_obj)#
         noobject_delta = noobject_mask * best_has_obj
-
-        object_loss = tf.reduce_mean(tf.reduce_sum(tf.square(object_delta), axis=[3,2,1]),  name='object_loss')
-        noobject_loss = tf.reduce_mean(tf.reduce_sum(tf.square(noobject_delta), axis=[3,2,1]), name='noobject_loss') * self.lambda_noobj
         
-        #print("object loss:{}".format(object_loss))
-        #print("no object loss:{}".format(noobject_loss))
+        
+        object_loss = tf.reduce_sum(tf.square(object_delta), axis=[3,2,1,0]) * self.lambda_obj
+        noobject_loss = tf.reduce_sum(tf.square(noobject_delta), axis=[3,2,1,0]) * self.lambda_noobj
+        
+        print("object loss:{}".format(object_loss))
+        print("no object loss:{}".format(noobject_loss))
 
         #debug bun
         
-        return coord_loss+cls_loss+object_loss+noobject_loss
+        loss = coord_loss+cls_loss+object_loss+noobject_loss
         
+        if self.print_loss:
+            loss = tf.Print(loss, [loss, coord_loss, cls_loss, object_loss, noobject_loss], message='loss: ')
+
+        return loss 
         #x = K.print_tensor(K.mean(K.square(y_pred - y_true), axis=-1))
         #return K.mean(K.square(y_pred - y_true), axis=-1)
 
         
+
 """
 
 imageDir = 'dataset/images'
@@ -219,12 +241,8 @@ one_head_labels = np.concatenate((labels_grids,bboxes_grids),axis=1)
 #one_head_labels = np.reshape(one_head_labels,(-1,(len(classes)+B*5)*no_grids*no_grids))
 
 
-#x1 = tf.Variable([1.,0.5,3.2,4.5],dtype=tf.float32)
-#x2 = tf.Variable([0.4,0.2,1.2,1.6],dtype=tf.float32)
-
 loss = YoloLoss()
 
-loss(one_head_labels[1:3],one_head_labels[1:3]+0.1)
-
+loss(one_head_labels[1:5],one_head_labels[1:5]+0.1)
 
 """
