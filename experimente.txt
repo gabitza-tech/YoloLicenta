@@ -230,6 +230,7 @@ Epoch 100/250
 Experiment 17, 24.03:
 - dezghetat tot, 2048 dense, leaky 0.1, drop 0.6, output sigmoid
 -no_grids 7
+-train/test split 0.8/0.2
 - functie loss normala cu sum peste toate imaginile din batch
 - batch 16
 - epoci 250
@@ -240,6 +241,7 @@ OBS:- Desi val_loss-ul e mult mai mare decat loss-ul pe train, predictiile sunt 
 - inferenta se face cu 15FPS in medie
 
 NEXT:
+-marit training/test ratio 0.9/0.1
 -sa antrenez ptr 250 de epoci si cu 9/11 griduri
 -sa antrenez mai mult de 250 de epoci cu aceiasi configuratie
 -schimb din sum ptr toate imaginile in MEAN !!
