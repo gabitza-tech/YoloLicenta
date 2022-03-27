@@ -156,7 +156,7 @@ class GridTransform:
         M = h_img//self.no_grids
         N = w_img//self.no_grids
 
-        for y in range(0,h,M):
+        for y in range(0,h_img,M):
             for x in range(0, w_img, N):
                 y1 = y + M
                 x1 = x + N
