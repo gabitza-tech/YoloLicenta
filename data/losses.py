@@ -28,7 +28,7 @@ class YoloLoss:
         self.lambda_coord = 5.0
         self.lambda_class = 2.0
         self.ious = []
-        self.print_loss = True
+        
 
     def calc_iou(self, boxes1, boxes2, scope='iou'):
         """calculate ious
@@ -200,10 +200,7 @@ class YoloLoss:
         #debug bun
         
         loss = coord_loss+cls_loss+object_loss+noobject_loss
-        
-        if self.print_loss:
-            loss = tf.Print(loss, [loss, coord_loss, cls_loss, object_loss, noobject_loss], message='loss: ')
-
+       
         return loss 
         #x = K.print_tensor(K.mean(K.square(y_pred - y_true), axis=-1))
         #return K.mean(K.square(y_pred - y_true), axis=-1)
