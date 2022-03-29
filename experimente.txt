@@ -239,8 +239,14 @@ Experiment 17, 24.03:
 Epoch 00250: loss did not improve from 3.35610
 OBS:- Desi val_loss-ul e mult mai mare decat loss-ul pe train, predictiile sunt foarte bune si precise in general. Class score-ul este destul de mic totusi si ar trebui sa ma concentrez sa obtin o eroare de clasificare mai mica. 
 - inferenta se face cu 13-14FPS in medie
+- am adaugt Non Maximum Suppression
+Experiment 18,29.03:
+- am schimbat lr= 0.000005
+- am mai lasat 250 de epoci
+
 
 NEXT:
+- reincercat cu lr de 0.001 si 0.0001 sa vad daca merge in nan si sa scad treptat lr-ul cu Reduce on Plateau
 -marit training/test ratio 0.9/0.1
 -sa antrenez ptr 250 de epoci si cu 9/11 griduri
 -sa antrenez mai mult de 250 de epoci cu aceiasi configuratie
