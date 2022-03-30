@@ -246,6 +246,8 @@ Experiment 18,29.03:
 
 
 NEXT:
+-incercat si cu alte retele mai mari/diferite resnet101/resnet150/resnext etc
+-FACUT AUGMENTARE DATE
 - reincercat cu lr de 0.001 si 0.0001 sa vad daca merge in nan si sa scad treptat lr-ul cu Reduce on Plateau
 -marit training/test ratio 0.9/0.1
 -sa antrenez ptr 250 de epoci si cu 9/11 griduri
