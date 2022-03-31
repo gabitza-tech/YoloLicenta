@@ -268,7 +268,17 @@ Experiment 21,31.03: (reincercat antrenat apropiat de cel mai bun model incercat
 -train/test split 0.72train/0.18val/0.1 test
 - mean pe batch
 - batch 16
-- lr = 0.0001, reduce lr on plateau, patience= 6, factor = 0.1,metrics = val_loss
+- lr = 0.0001, reduce lr on plateau, patience= 6, factor = 0.1,metrics = val_loss,early stop patience 10
+-early stop epoch 17 5.52 val_loss
+
+Experiment 22,31.03: (reincercat antrenat apropiat de cel mai bun model incercat)
+- warm cu head doar, 2048 dense, !mish activation, drop 0.6, output sigmoid
+-no_grids 7
+-train/test split 0.72train/0.18val/0.1 test
+- mean pe batch
+- batch 16
+- lr = 0.0005, reduce lr on plateau, patience= 6, factor = 0.2,metrics = val_loss,early stop patience 10
+-
 
 NEXT:
 - reincercat cu lr de 0.001 si 0.0001 sa vad daca merge in nan si sa scad treptat lr-ul cu Reduce on Plateau
