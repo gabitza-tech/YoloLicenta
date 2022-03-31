@@ -226,7 +226,7 @@ Experiment 16, 24.03:
 - end: Epoch 00099: loss did not improve from 8.87421
 Epoch 100/250
 1542/1542 [==============================] - 459s 298ms/step - loss: 8.6825 - mae: 1.4237 - val_loss: 47.8476 - val_mae: 1.3022
-
+!!!!BEST!!!!
 Experiment 17, 24.03:
 - dezghetat tot, 2048 dense, leaky 0.1, drop 0.6, output sigmoid
 -no_grids 7
@@ -243,13 +243,37 @@ OBS:- Desi val_loss-ul e mult mai mare decat loss-ul pe train, predictiile sunt 
 Experiment 18,29.03:
 - am schimbat lr= 0.000005
 - am mai lasat 250 de epoci
+- a scazut la 2.0 training loss ul si a crescut la 69 val loss ul
+- nicio imbunatatire in predictii, actually sunt mai rele
 
+Experiment 19,30.03:
+- dezghetat doar head for warm up,2048 dense, leaky 0.1, drop 0.6, output sigmoid
+- facut mean pe loss final la dimensiune batch
+- init lr = 0.0001
+-batch 32
+-100 epoci
+-end: slab: overfit imediat, nu trece de 5.7 val loss-ul 
+
+Experiment 20,31.03:
+- dezghetat doar head for warm up,4096 dense, leaky 0.1, drop 0.6, output sigmoid
+- facut mean pe loss final la dimensiune batch
+- init lr = 0.001(nan loss),0.0001(nu invata),reduce lr on plateau, patience= 6, factor = 0.1,metrics = val_loss
+-batch 32
+-100 epoci
+-niciun rezultat ok in primele epoci
+
+Experiment 21,31.03: (reincercat antrenat apropiat de cel mai bun model incercat)
+- warm cu head doar, 2048 dense, !mish activation, drop 0.6, output sigmoid
+-no_grids 7
+-train/test split 0.72train/0.18val/0.1 test
+- mean pe batch
+- batch 16
+- lr = 0.0001, reduce lr on plateau, patience= 6, factor = 0.1,metrics = val_loss
 
 NEXT:
--incercat si cu alte retele mai mari/diferite resnet101/resnet150/resnext etc
--FACUT AUGMENTARE DATE
 - reincercat cu lr de 0.001 si 0.0001 sa vad daca merge in nan si sa scad treptat lr-ul cu Reduce on Plateau
--marit training/test ratio 0.9/0.1
+-marit training/test ratio 0.9/0.1 (DONE)
+-regularizari
 -sa antrenez ptr 250 de epoci si cu 9/11 griduri
 -sa antrenez mai mult de 250 de epoci cu aceiasi configuratie
 -schimb din sum ptr toate imaginile in MEAN !!
