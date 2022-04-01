@@ -287,7 +287,12 @@ Experiment 23,31.03: (reincercat antrenat apropiat de cel mai bun model incercat
 - mean pe batch
 - batch 64
 - lr = 0.00005, reduce lr on plateau, patience= 6, factor = 0.2,metrics = val_loss,early stop patience 10
--
+- end: val_loss 5.05 epoch ~89, last learning rate 3*10^7
+Experiment 24:
+-dezghetat cap+un block( layers[-36:]=True)
+-folosit warm 5.05 si ultima configuratie din exp 23
+-lr = 0.0001 si tot restu la fel
+-150 de epoci
 
 
 NEXT:
