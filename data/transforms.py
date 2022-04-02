@@ -112,7 +112,7 @@ class GridTransform:
         return area_intersection/area_combined
 
 
-    def nonmax_suppression(self,bboxes,initial_positions, iou_cutoff):
+    def nonmax_suppression(self,bboxes,labels,initial_positions, iou_cutoff):
         '''
         Suppress any overlapping boxes with IOU greater than 'iou_cutoff', keeping only
         the one with highest confidence scores
@@ -128,18 +128,30 @@ class GridTransform:
         compare every cell prediction with the other cell predictions
         note: may not be the most efficient
         """
+        
         for i in range(bboxes.shape[0]):
+
             box1 = bboxes[i]
+            
+            label1 = labels[i]
+            label_pos1 = np.argmax(label1[:20],axis=0)
+            
             for j in range(i+1, bboxes.shape[0]):
+            
                 box2 = bboxes[j]
+
+                label2 = labels[j]
+                label_pos2 = np.argmax(label2[:20],axis=0)
+                
                 iou = self.iou_value(box1[1:5], box2[1:5],initial_positions[i],initial_positions[j])
                 #print(initial_positions[i], " & ", initial_positions[j], "IOU: ", iou)
-                if iou >= iou_cutoff:
-                    if box1[0] > box2[0]:
-                        suppress_list.append(j)
-                    else:
-                        suppress_list.append(i)
-                        continue
+                if label_pos1 == label_pos2:
+                    if iou >= iou_cutoff:
+                        if box1[0] > box2[0]:
+                            suppress_list.append(j)
+                        else:
+                            suppress_list.append(i)
+                            continue
         #print('suppress_list: ', suppress_list)
 
         for i in range(bboxes.shape[0]):
@@ -151,7 +163,7 @@ class GridTransform:
         nms_list = np.asarray(nms_list)
         return nms_list, positions
 
-    def transform_with_nms(self,bboxes,labels,image,output_path,conf_thresh = 0.7,nms_iou_cutoff = 0.15):
+    def transform_with_nms(self,bboxes,labels,image,conf_thresh = 0.8,nms_iou_cutoff = 0.05):
         (h_img, w_img) = image.shape[:2]
         M = h_img//self.no_grids
         N = w_img//self.no_grids
@@ -165,9 +177,12 @@ class GridTransform:
         
         bboxes = np.reshape(bboxes,(10,bboxes.shape[1]*bboxes.shape[2]))
         # I concatenate the predictions from both bounding boxes in a (5,98) shaped array (p,cx_cell,cy_cell,w,h)
+        
         concat_bboxes = np.concatenate((bboxes[:5,...],bboxes[5:10,...]),axis=1)
+        nms_labels = np.reshape(labels, (20,labels.shape[1]*labels.shape[2]))
         
         filtered_conf_bboxes=[]
+        filtered_labels = []
         initial_positions = []
         # I filter the boxes with low confidence and memorize the cell location of the boxes that pass the confidence threshold
         # this improves inference time by 3 times, because we don't go through all the boxes anymore
@@ -176,16 +191,21 @@ class GridTransform:
             if concat_bboxes[0,i] > conf_thresh:
                 filtered_conf_bboxes.append(concat_bboxes[:5,i])
                 if i < self.no_grids*self.no_grids:
+                    filtered_labels.append(nms_labels[:20,i])
+                else:
+                    filtered_labels.append(nms_labels[:20,i-self.no_grids*self.no_grids])
+                if i < self.no_grids*self.no_grids:
                     initial_positions.append(i)
                 else:
                     initial_positions.append(i-self.no_grids*self.no_grids)
             else:
                 continue
         filtered_conf_bboxes = np.asarray(filtered_conf_bboxes)
+        filtered_labels = np.asarray(filtered_labels)
         
         # I apply Non-Maximum Suppression on all the bounding boxes predictions
         # it returns the boxes coordinates and the cell positions for the respective boxes
-        nms_box_list, positions = self.nonmax_suppression(filtered_conf_bboxes,initial_positions,nms_iou_cutoff)        
+        nms_box_list, positions = self.nonmax_suppression(filtered_conf_bboxes,filtered_labels,initial_positions,nms_iou_cutoff)        
         
         for (i,box) in enumerate(nms_box_list):
             
@@ -212,19 +232,17 @@ class GridTransform:
             endY = int((cY_imag+h_obj/2)*h_img)
             #print(startX,startY,endX,endY,cX_imag,cY_imag)
             
-            # draw the predicted boundi]\
+            # draw the predicted bounding
             # ng box and class label on the image
             y = startY - 10 if startY - 10 > 10 else startY + 10
             image = cv2.circle(image, (int(cX_imag*w_img),int(cY_imag*h_img)), radius=3, color=(0, 0, 255), thickness=-1)
             cv2.rectangle(image, (startX, startY), (endX, endY),
                 (0, 255, 0), 2)
             cv2.putText(image, "{}:{:.2f} ".format(class_name,class_score), (startX, y), cv2.FONT_HERSHEY_SIMPLEX,	0.65, (0, 255, 0), 2)
-        #cv2.imshow('da',image)
-        cv2.imwrite(output_path,image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()     
+        return image
+
     
-    def transform_from_grid(self,bboxes,labels,image,output_path):
+    def transform_from_grid(self,bboxes,labels,image):
         (h, w) = image.shape[:2]
         M = h//self.no_grids
         N = w//self.no_grids
@@ -243,8 +261,6 @@ class GridTransform:
             h_obj = bboxes[B*5+4,...]
             for (row,i) in enumerate(bboxes[B*5,...]):
                 for (col,j) in enumerate(i):
-                    #if j > 0.6:
-
                     label_pos = np.argmax(labels[:20,row,col],axis=0)
                     class_score = j* labels[label_pos,row,col]
                     if class_score > 0.25:
@@ -264,32 +280,20 @@ class GridTransform:
                         cv2.rectangle(image, (startX, startY), (endX, endY),
                             (0, 255, 0), 2)
                         cv2.putText(image, "{}: {}".format(class_name,class_score), (startX, y), cv2.FONT_HERSHEY_SIMPLEX,	0.65, (0, 255, 0), 2)
-        #cv2.imshow('da',image)
-        cv2.imwrite(output_path,image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
+        return image
 
 """
-
 imageDir = 'dataset/images'
 annotDir = 'dataset/annotations'
-
 data = []
 bboxes = []
 labels = []
 no_objects = []
-
 dataset = VOCdataset()
 data,bboxes,labels,no_objects,imagePaths = dataset.load_dataset(imageDir,annotDir)
-
 GT = GridTransform()
-
 bboxes_t,labels_t = GT.transform(bboxes,labels,no_objects)
-
-
 #Test transformare corecta
-
 no_grids=9
 for (step,imagePath) in enumerate(imagePaths):
     if step == 15:
@@ -299,5 +303,4 @@ for (step,imagePath) in enumerate(imagePaths):
         image = cv2.resize(image, (224,224), interpolation = cv2.INTER_AREA)
         [h,w] = image.shape[:2]
         GT.transform_from_grid(bboxes_t[step,...],labels_t[step,...],h,w,image)
-
 """
