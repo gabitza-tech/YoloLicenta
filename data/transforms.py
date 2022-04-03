@@ -174,12 +174,13 @@ class GridTransform:
                 x1 = x + N
                 tiles = image[y:y+M,x:x+N]
                 cv2.rectangle(image, (x, y), (x1, y1), (100, 100, 100))
-        
+        #easier to work with 2D vectors
         bboxes = np.reshape(bboxes,(10,bboxes.shape[1]*bboxes.shape[2]))
-        # I concatenate the predictions from both bounding boxes in a (5,98) shaped array (p,cx_cell,cy_cell,w,h)
-        
+        labels = np.reshape(labels, (20,labels.shape[1]*labels.shape[2]))
+        # I concatenate the predictions from both bounding boxes and labels in a (5,98) shaped array (p,cx_cell,cy_cell,w,h)
+        # so I can take in consideration both BBOX predictions
         concat_bboxes = np.concatenate((bboxes[:5,...],bboxes[5:10,...]),axis=1)
-        nms_labels = np.reshape(labels, (20,labels.shape[1]*labels.shape[2]))
+        nms_labels = np.concatenate((labels[:20,...],labels[:20,...]),axis=1)
         
         filtered_conf_bboxes=[]
         filtered_labels = []
@@ -190,14 +191,8 @@ class GridTransform:
         for i in range(concat_bboxes.shape[1]):
             if concat_bboxes[0,i] > conf_thresh:
                 filtered_conf_bboxes.append(concat_bboxes[:5,i])
-                if i < self.no_grids*self.no_grids:
-                    filtered_labels.append(nms_labels[:20,i])
-                else:
-                    filtered_labels.append(nms_labels[:20,i-self.no_grids*self.no_grids])
-                if i < self.no_grids*self.no_grids:
-                    initial_positions.append(i)
-                else:
-                    initial_positions.append(i-self.no_grids*self.no_grids)
+                filtered_labels.append(nms_labels[:20,i])
+                initial_positions.append(i)
             else:
                 continue
         filtered_conf_bboxes = np.asarray(filtered_conf_bboxes)
@@ -206,7 +201,7 @@ class GridTransform:
         # I apply Non-Maximum Suppression on all the bounding boxes predictions
         # it returns the boxes coordinates and the cell positions for the respective boxes
         nms_box_list, positions = self.nonmax_suppression(filtered_conf_bboxes,filtered_labels,initial_positions,nms_iou_cutoff)        
-        
+
         for (i,box) in enumerate(nms_box_list):
             
             cx = box[1]
@@ -214,13 +209,17 @@ class GridTransform:
             w_obj = box[3]
             h_obj = box[4]
             
-            #get the 
+            # I return the positions relative to the maximum number of grids, not the concatenated one
+            if positions[i] > self.no_grids*self.no_grids-1:
+                positions[i] = positions[i] - self.no_grids*self.no_grids
+
+            #get the row and column of the grids in the image 
             col = positions[i] % self.no_grids
             row = positions[i] // self.no_grids
 
-            label_pos = np.argmax(labels[:20,row,col],axis=0)
+            label_pos = np.argmax(labels[:20,positions[i]],axis=0)
             confidence_score = box[0]
-            class_score = confidence_score* labels[label_pos,row,col] # I can either show the confidence score or the class score
+            class_score = confidence_score* labels[label_pos,positions[i]] # I can either show the confidence score or the class score
             class_name = classes[label_pos]
 
             cX_imag = col/self.no_grids + cx/self.no_grids
