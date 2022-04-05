@@ -352,7 +352,7 @@ class GridTransform:
 
         area_intersection = w*h
 
-        area_combined = abs((box1[2]-box1[0])*(box1[1]-box1[3]) + (box2[2]-box2[0])*(box2[3]-box2[1]) - area_intersection + 1e-3)
+        area_combined = abs((box1[2]-box1[0])*(box1[3]-box1[1]) + (box2[2]-box2[0])*(box2[3]-box2[1]) - area_intersection + 1e-3)
         return area_intersection/area_combined
     """
     Inspirat din https://github.com/aladdinpersson/Machine-Learning-Collection/blob/ac5dcd03a40a08a8af7e1a67ade37f28cf88db43/ML/Pytorch/object_detection/YOLO/utils.py#L7
