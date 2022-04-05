@@ -304,7 +304,8 @@ Exp 26:
 Exp 27:
 -dezghetat doua blocuri [-98:],fol warm 5.05
 -lr 0.0001(nan),batch 16(oom allocation error), batch 8
-- lr 0.00001 and batch 8 
+- lr 0.00001 and batch 8
+-epoch 65 end:- 935s 607ms/step - loss: 0.4730 - mae: 0.1353 - val_loss: 2.9032 - val_mae: 0.1203
 
 NEXT:
 - reincercat cu lr de 0.001 si 0.0001 sa vad daca merge in nan si sa scad treptat lr-ul cu Reduce on Plateau
