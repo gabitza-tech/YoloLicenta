@@ -310,8 +310,11 @@ Exp 28:
 -inghetat intreg resnet, 224 input
 -leaky 0.2, batch 16,drop0.7, loss class_lambda=1,9 grids
 -epoc <60 lr = 10^-5, epoch > 60 lr = 10^-6
--250 epochs
-
+-epoch 113:  loss: 3.2760 - mae: 0.1532 - val_loss: 3.9125 - val_mae: 0.1508
+Continuare:
+-micsorat batch la  8
+-marit lr la 10^-5
+-antrenat inca 100 epoci tot in warm up
 NEXT:
 - reincercat cu lr de 0.001 si 0.0001 sa vad daca merge in nan si sa scad treptat lr-ul cu Reduce on Plateau
 -marit training/test ratio 0.9/0.1 (DONE)
