@@ -21,6 +21,7 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import load_model, Model
 from tensorflow.keras import backend as K
 from tensorflow.keras.applications.resnet import ResNet50
+from tensorflow.keras.applications.efficientnet import EfficientNetB4
 from tensorflow.python.keras.utils.vis_utils import plot_model
 from tensorflow.keras.callbacks import LearningRateScheduler, TensorBoard, ModelCheckpoint, ReduceLROnPlateau,EarlyStopping
 
@@ -74,7 +75,7 @@ data,bboxes,labels,no_objects, imagePaths = dataset.load_dataset(imageDir,annotD
 #default number of grids: no_grids =11 and default number of box predictions: B=2
 
 B = 2 # number of bbox predictions per cell
-no_grids = 7 # number of grid cells per image
+no_grids = 9 # number of grid cells per image
 GT = GridTransform(B, no_grids)
 
 bboxes_grids,labels_grids = GT.transform(bboxes,labels,no_objects)
@@ -110,49 +111,62 @@ print("[INFO] saving val image paths...")
 f = open("output/val.txt", "w")
 f.write("\n".join(valPaths))
 f.close()
-  
+
 model = ResNet50(include_top=False,weights='imagenet', input_shape=(224,224,3))
+#model = EfficientNetB4(include_top=False,weights='imagenet', input_shape=(224,224,3))
 
 for layer in model.layers:
     layer.trainable=False
 
 flatten = Flatten()(model.output)
-head = Dense(2048,name='fc_1',activation='Mish')(flatten)
-#head = LeakyReLU(alpha=0.1)(head)
-head = Dropout(0.6)(head)
+head = Dense(2048,name='fc_1')(flatten)
+head = LeakyReLU(alpha=0.3)(head)
+head = Dropout(0.7)(head)
 head = Dense((len(classes)+B*5)*no_grids*no_grids, activation = 'sigmoid', name = 'fc_3')(head)#(len(classes)+B*5)*no_grids*no_grids
 
 detector = Model(inputs=model.input,outputs = head)
 """
-detector = load_model('output/7x7epoch250loss3p37.hdf5', custom_objects = {"YoloLoss":YoloLoss})
+detector = load_model('output/resnet_9grids.hdf5', custom_objects = {"YoloLoss":YoloLoss})
 
-for layer in detector.layers[:]:
-    layer.trainable=True
+#for layer in detector.layers[:]:
+#    layer.trainable=False
 
-#for layer in detector.layers[-36:]:
+#for layer in detector.layers[-98:]:
 #    layer.trainable=True
-   """
-for layer in detector.layers[:]:
-    print(layer.name,layer.trainable)
-  
+"""
+for (i,layer) in enumerate(detector.layers[:]):
+    print(i,layer.name,layer.trainable)
+
+def step_decay(epoch):
+    if epoch < 60:
+        lr = 0.00001
+        return lr
+    if epoch > 59:
+        lr = 0.000001
+        return lr
+
+
 plot_model(detector, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
 
-fname = os.path.sep.join(["output/warm.hdf5"])
-checkpoint = ModelCheckpoint(fname, monitor="val_loss", save_best_only=True, mode = "min", verbose=1)
+fname = os.path.sep.join(["output/resnet_9grids_warm.hdf5"])
+checkpoint = ModelCheckpoint(fname, monitor="loss", save_best_only=True, mode = "min", verbose=1)
 tensorboardname = "Pascal-model-{}".format(int(time.time()))
 tensorboard = TensorBoard(log_dir='logs/{}'.format(tensorboardname))
-reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,mode = 'min',
-                              patience=6, min_lr=0.0000001,verbose=1)
-early_stop = EarlyStopping(monitor='val_loss',patience = 10, min_delta =0.1, mode= 'min')
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5,mode = 'min',
+                              patience=8,verbose=1)
+early_stop = EarlyStopping(monitor='val_loss',patience = 20, min_delta =0.01, mode= 'min')
+LearningRate = LearningRateScheduler(step_decay, verbose = 1) 
 
-callbacks = [checkpoint,tensorboard,reduce_lr,early_stop]#,LearningRateScheduler(step_decay)
+callbacks = [checkpoint,tensorboard]#,reduce_lr,early_stop]#,LearningRateScheduler(step_decay)
 
 loss = YoloLoss()
 loss.__name__ = "YoloLoss"
 # initialize the optimizer, compile the model, and show the model
 # summary
-opt = Adam(learning_rate=0.0001)
-detector.compile(loss=loss, optimizer=opt, metrics=["mae"])#'mean_squared_error'
+
+lr = 0.000001
+opt = Adam(learning_rate=lr)
+detector.compile(loss=loss, optimizer=opt, metrics=[GT.mAP])#'mean_squared_error'
 
 # train the network for bounding box regression and class label
 # prediction
@@ -162,7 +176,7 @@ H = detector.fit(
 	trainImages,trainLabels,
 	validation_data =(valImages,valLabels),
 	batch_size=16,
-	epochs=100,
+	epochs=250,
     callbacks = callbacks,
 	verbose=1)
 
