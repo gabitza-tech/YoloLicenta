@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 import cv2
 import tensorflow as tf
+from collections import Counter
 
 classes = ['person' , 'bird', 'cat', 'cow',
            'dog', 'horse', 'sheep', 'aeroplane',
@@ -163,7 +164,7 @@ class GridTransform:
         nms_list = np.asarray(nms_list)
         return nms_list, positions
 
-    def transform_with_nms(self,bboxes,labels,image,conf_thresh = 0.8,nms_iou_cutoff = 0.05):
+    def transform_with_nms(self,bboxes,labels,image,conf_thresh = 0.8,nms_iou_cutoff = 0.15):
         (h_img, w_img) = image.shape[:2]
         M = h_img//self.no_grids
         N = w_img//self.no_grids
@@ -280,6 +281,207 @@ class GridTransform:
                             (0, 255, 0), 2)
                         cv2.putText(image, "{}: {}".format(class_name,class_score), (startX, y), cv2.FONT_HERSHEY_SIMPLEX,	0.65, (0, 255, 0), 2)
         return image
+
+    def nms_for_mAP(self,bboxes,labels,image_pos,conf_thresh = 0.8,nms_iou_cutoff = 0.05):
+        
+        
+        # I concatenate the predictions from both bounding boxes and labels in a (5,98) shaped array (p,cx_cell,cy_cell,w,h)
+        # so I can take in consideration both BBOX predictions
+        concat_bboxes = np.concatenate((bboxes[:5,...],bboxes[5:10,...]),axis=1)
+        nms_labels = np.concatenate((labels[:20,...],labels[:20,...]),axis=1)
+        
+        filtered_conf_bboxes=[]
+        filtered_labels = []
+        initial_positions = []
+        # I filter the boxes with low confidence and memorize the cell location of the boxes that pass the confidence threshold
+        # this improves inference time by 3 times, because we don't go through all the boxes anymore
+        # as the inference time scales by O(n^2) with n being number of boxes
+        for i in range(concat_bboxes.shape[1]):
+            if concat_bboxes[0,i] > conf_thresh:
+                filtered_conf_bboxes.append(concat_bboxes[:5,i])
+                filtered_labels.append(nms_labels[:20,i])
+                initial_positions.append(i)
+            else:
+                continue
+        filtered_conf_bboxes = np.asarray(filtered_conf_bboxes)
+        filtered_labels = np.asarray(filtered_labels)
+        
+        # I apply Non-Maximum Suppression on all the bounding boxes predictions
+        # it returns the boxes coordinates and the cell positions for the respective boxes
+        nms_box_list, positions = self.nonmax_suppression(filtered_conf_bboxes,filtered_labels,initial_positions,nms_iou_cutoff)        
+
+        nms_list = []
+        for (i,box) in enumerate(nms_box_list):
+            
+            cx = box[1]
+            cy = box[2]
+            w_obj = box[3]
+            h_obj = box[4]
+            
+            # I return the positions relative to the maximum number of grids, not the concatenated one
+            if positions[i] > self.no_grids*self.no_grids-1:
+                positions[i] = positions[i] - self.no_grids*self.no_grids
+
+            #get the row and column of the grids in the image 
+            col = positions[i] % self.no_grids
+            row = positions[i] // self.no_grids
+
+            cx_imag = col/self.no_grids + cx/self.no_grids
+            cy_imag = row/self.no_grids + cy/self.no_grids
+
+            startX = (cx_imag-w_obj/2)
+            startY = (cy_imag-h_obj/2)
+            endX = (cx_imag+w_obj/2)
+            endY = (cy_imag+h_obj/2)
+
+            label_pos = np.argmax(labels[:20,positions[i]],axis=0)
+            confidence_score = box[0]
+            
+            nms_list.append([image_pos, label_pos,confidence_score,startX, startY, endX, endY])
+        
+        return nms_list
+    
+    def iou_map(self,box1,box2):
+        x1 = max(box1[0], box2[0])
+        x2 = min(box1[2], box2[2])
+        w = max(0, (x2-x1))
+
+        y1 = max(box1[1], box2[1])
+        y2 = min(box1[3], box2[3])
+        h = max(0, (y2-y1))
+
+        area_intersection = w*h
+
+        area_combined = abs((box1[2]-box1[0])*(box1[1]-box1[3]) + (box2[2]-box2[0])*(box2[3]-box2[1]) - area_intersection + 1e-3)
+        return area_intersection/area_combined
+    """
+    Inspirat din https://github.com/aladdinpersson/Machine-Learning-Collection/blob/ac5dcd03a40a08a8af7e1a67ade37f28cf88db43/ML/Pytorch/object_detection/YOLO/utils.py#L7
+    """
+    def mAP_numpy(self,y_true,y_pred):
+    
+        mAP_per_batch = np.float32(0.1)
+
+        y_true = np.reshape(y_true,(-1,30,self.no_grids*self.no_grids))
+        y_pred = np.reshape(y_pred,(-1,30,self.no_grids*self.no_grids))
+
+        pred_boxes = y_pred[:,20:,...]
+        pred_classes = y_pred[:,:20,...]
+
+        true_boxes = y_true[:,20:,...]
+        true_classes =  y_true[:,:20,...]
+
+        batch_pred_boxes = []
+        for i in range(pred_boxes.shape[0]):
+            nms_boxes = self.nms_for_mAP(pred_boxes[i],pred_classes[i],i)
+            for prediction in nms_boxes:
+                batch_pred_boxes.append(prediction)
+            
+        
+        batch_true_boxes = []
+        for i in range(true_boxes.shape[0]):
+            positions_true = np.where(true_boxes[i,0])
+            
+            box_list = []
+            for j in positions_true[0]: 
+                #get the row and column of the grids in the image 
+                col = j % self.no_grids
+                row = j // self.no_grids
+
+                cx = true_boxes[i,1,j]
+                cy = true_boxes[i,2,j]
+                w_obj = true_boxes[i,3,j]
+                h_obj = true_boxes[i,4,j]
+
+                cx_imag = col/self.no_grids + cx/self.no_grids
+                cy_imag = row/self.no_grids + cy/self.no_grids
+
+                label_pos = np.argmax(true_classes[i,:20,j],axis=0)
+                
+                startX = (cx_imag-w_obj/2)
+                startY = (cy_imag-h_obj/2)
+                endX = (cx_imag+w_obj/2)
+                endY = (cy_imag+h_obj/2)
+                    
+
+                batch_true_boxes.append([i,label_pos,1,startX, startY, endX, endY])
+        
+        epsilon = 1e-6
+        average_precision = []
+        for c in range(len(classes)):
+            detections = []
+            ground_truths = []
+
+            for detection in batch_pred_boxes:
+                if detection[1] == c:
+                    detections.append(detection)
+            for true_box in batch_true_boxes:
+                if true_box[1] == c:
+                    ground_truths.append(true_box)
+            
+            amount_bboxes = Counter([gt[0] for gt in ground_truths])
+
+            # We then go through each key, val in this dictionary
+            # and convert to the following (w.r.t same example):
+            # ammount_bboxes = {0:torch.tensor[0,0,0], 1:torch.tensor[0,0,0,0,0]}
+            for key, val in amount_bboxes.items():
+                amount_bboxes[key] = np.zeros(val)
+            detections.sort(key=lambda x: x[2], reverse=True)
+            TP = np.zeros((len(detections)))
+            FP = np.zeros((len(detections)))
+            total_true_bboxes = len(ground_truths)
+            # If none exists for this class then we can safely skip
+            if total_true_bboxes == 0:
+                continue
+
+            for detection_idx, detection in enumerate(detections):
+                # Only take out the ground_truths that have the same
+                # training idx as detection
+                ground_truth_img = [
+                    bbox for bbox in ground_truths if bbox[0] == detection[0]
+                ]
+
+                num_gts = len(ground_truth_img)
+                best_iou = 0
+
+                for idx, gt in enumerate(ground_truth_img):
+                    iou = self.iou_map(
+                    detection[3:],
+                    gt[3:],
+                    
+                )
+
+                    if iou > best_iou:
+                        best_iou = iou
+                        best_gt_idx = idx
+
+                if best_iou > 0.5:
+                    # only detect ground truth detection once
+                    if amount_bboxes[detection[0]][best_gt_idx] == 0:
+                        # true positive and add this bounding box to seen
+                        TP[detection_idx] = 1
+                        amount_bboxes[detection[0]][best_gt_idx] = 1
+                    else:
+                        FP[detection_idx] = 1
+
+                # if IOU is lower then the detection is a false positive
+                else:
+                    FP[detection_idx] = 1
+            
+            TP_cumsum = np.cumsum(TP,axis=0)
+            FP_cumsum = np.cumsum(FP, axis=0)
+            recalls = TP_cumsum / (total_true_bboxes + epsilon)
+            precisions = np.float32(TP_cumsum / (TP_cumsum + FP_cumsum + epsilon))
+            average_precision.append(np.trapz(precisions,recalls))
+
+        return np.float32(sum(average_precision)/ len(average_precision))
+
+    def mAP(self,y_true,y_pred):
+        y = tf.numpy_function(self.mAP_numpy, [y_true,y_pred], np.float32)
+        return y
+#### CONTINUAT ASA PENTRU CA MERGE CU TF.NUMPY_FUNC DOAR DE TERMINAT mAP_NUMPY 
+
+            
+
 
 """
 imageDir = 'dataset/images'
