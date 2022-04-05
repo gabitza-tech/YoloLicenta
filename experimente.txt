@@ -314,7 +314,10 @@ Exp 28:
 Continuare:
 -micsorat batch la  8
 -marit lr la 10^-5
--antrenat inca 100 epoci tot in warm up
+-antrenat inca 100 epoci tot in warm up 
+- STOP DUPA 10 epoci
+- coborat la 10^-6
+-reluat antrenare
 NEXT:
 - reincercat cu lr de 0.001 si 0.0001 sa vad daca merge in nan si sa scad treptat lr-ul cu Reduce on Plateau
 -marit training/test ratio 0.9/0.1 (DONE)
