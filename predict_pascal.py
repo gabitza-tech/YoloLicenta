@@ -27,7 +27,7 @@ filetype = mimetypes.guess_type('output/train.txt')[0]
 # images
 if "text/plain" == filetype:
 	# load the image paths in our testing file
-	imagePaths = open('output/test.txt').read().strip().split("\n")
+	imagePaths = open('output/val.txt').read().strip().split("\n")
 
 
 print("Load trained model")
@@ -58,10 +58,11 @@ for (step,imagePath) in enumerate(imagePaths):
         classPred = prediction[:20,...]
         
         image1 = cv2.imread(imagePath)
-        output_path = 'images_pred/test_nms/image_{}.jpg'.format(step)
-        #GT.transform_from_grid(boxPred,classPred,image1,output_path)
-        GT.transform_with_nms(boxPred,classPred,image1,output_path)
-        
+        output_path = 'images_pred/val_nms/image_{}.jpg'.format(step)
+        #image=GT.transform_from_grid(boxPred,classPred,image1)
+        image_final = GT.transform_with_nms(boxPred,classPred,image1)
+        #cv2.imshow('Image',image_final)
+        cv2.imwrite(output_path,image_final)
         fps_inference.append(1/(time.time() - start))
 print("Mean FPS value of inference is: {}".format(sum(fps_inference)/len(fps_inference)))    
         
