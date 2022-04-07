@@ -28,12 +28,13 @@ class GridTransform:
             cell_pos = []
             cell_centers = []
             for bbox in bbox_image:
-                pos_cell_column = int(bbox[0]/self.w_cell) ## coloana, x
                 pos_cell_row = int(bbox[1]/self.h_cell) ## linie, y
+                pos_cell_column = int(bbox[0]/self.w_cell) ## coloana, x
+                
                 relative_cx = (bbox[0]-pos_cell_column*self.w_cell)/self.w_cell
                 relative_cy = (bbox[1]-pos_cell_row*self.h_cell)/self.h_cell
 
-                cell_pos.append([pos_cell_column,pos_cell_row])
+                cell_pos.append([pos_cell_row,pos_cell_column])
                 cell_centers.append([relative_cx, relative_cy, bbox[2], bbox[3]])
 
             cell_pos_per_image.append(cell_pos)
@@ -49,17 +50,16 @@ class GridTransform:
             label_grid = np.zeros((len(classes),self.no_grids,self.no_grids))
             for j in range(no_objects[i]):
                 
-                # folosesc [valoare,row,column]
+                #  [box_matrix_index,row,column]
 
-                #BBOX 1
-                bboxes_grid[1][cell_pos_image[i][j][1]][cell_pos_image[i][j][0]] = cell_centers_image[i][j][0]#cx
-                bboxes_grid[2][cell_pos_image[i][j][1]][cell_pos_image[i][j][0]] = cell_centers_image[i][j][1]#cy
-                bboxes_grid[3][cell_pos_image[i][j][1]][cell_pos_image[i][j][0]] = cell_centers_image[i][j][2]#w
-                bboxes_grid[4][cell_pos_image[i][j][1]][cell_pos_image[i][j][0]] = cell_centers_image[i][j][3]#h
+                bboxes_grid[1][cell_pos_image[i][j][0]][cell_pos_image[i][j][1]] = cell_centers_image[i][j][0]#cx
+                bboxes_grid[2][cell_pos_image[i][j][0]][cell_pos_image[i][j][1]] = cell_centers_image[i][j][1]#cy
+                bboxes_grid[3][cell_pos_image[i][j][0]][cell_pos_image[i][j][1]] = cell_centers_image[i][j][2]#w
+                bboxes_grid[4][cell_pos_image[i][j][0]][cell_pos_image[i][j][1]] = cell_centers_image[i][j][3]#h
                 
-                bboxes_grid[0][cell_pos_image[i][j][1]][cell_pos_image[i][j][0]] = 1 ## has_obj matrix
+                bboxes_grid[0][cell_pos_image[i][j][0]][cell_pos_image[i][j][1]] = 1 ## has_obj matrix
                 
-                label_grid[labels[i][j]][cell_pos_image[i][j][1]][cell_pos_image[i][j][0]] = 1 # label
+                label_grid[labels[i][j]][cell_pos_image[i][j][0]][cell_pos_image[i][j][1]] = 1 # label
 
             self.bboxes_tr.append(bboxes_grid)
             self.labels_tr.append(label_grid)
@@ -67,6 +67,50 @@ class GridTransform:
         self.bboxes_tr = np.array(self.bboxes_tr,dtype='float32')
         self.labels_tr = np.array(self.labels_tr,dtype='float32')
         return self.bboxes_tr,self.labels_tr
+
+    def transform_from_grid(self,bboxes,labels,image):
+        (h, w) = image.shape[:2]
+        M = h//self.no_grids
+        N = w//self.no_grids
+
+        for y in range(0,h,M):
+            for x in range(0, w, N):
+                y1 = y + M
+                x1 = x + N
+                tiles = image[y:y+M,x:x+N]
+                cv2.rectangle(image, (x, y), (x1, y1), (100, 100, 100))
+
+        for B in range(2):
+            cx = bboxes[B*5+1,...]
+            cy = bboxes[B*5+2,...]
+            w_obj = bboxes[B*5+3,...]
+            h_obj = bboxes[B*5+4,...]
+            for (row,i) in enumerate(bboxes[B*5,...]):
+                for (col,j) in enumerate(i):
+                    label_pos = np.argmax(labels[:20,row,col],axis=0)
+                    class_score = j* labels[label_pos,row,col]
+                    if class_score > 0.25:
+                        class_name = classes[label_pos]
+                        cX_imag = col/self.no_grids + cx[row,col]/self.no_grids
+                        cY_imag = row/self.no_grids + cy[row,col]/self.no_grids
+
+                        startX = int((cX_imag-w_obj[row,col]/2)*w)
+                        startY = int((cY_imag-h_obj[row,col]/2)*h)
+                        endX = int((cX_imag+w_obj[row,col]/2)*w)
+                        endY = int((cY_imag+h_obj[row,col]/2)*h)
+                        #print(startX,startY,endX,endY,cX_imag,cY_imag)
+                        
+                        # draw the predicted bounding box and class label on the image
+                        y = startY - 10 if startY - 10 > 10 else startY + 10
+                        image = cv2.circle(image, (int(cX_imag*w),int(cY_imag*h)), radius=3, color=(0, 0, 255), thickness=-1)
+                        cv2.rectangle(image, (startX, startY), (endX, endY),
+                            (0, 255, 0), 2)
+                        cv2.putText(image, "{}: {}".format(class_name,class_score), (startX, y), cv2.FONT_HERSHEY_SIMPLEX,	0.65, (0, 255, 0), 2)
+        return image
+
+    """
+    FROM HERE WE CALCULATE NON MAXIMUM SUPPRESSION
+    """
 
     def iou_value(self,box1, box2, box1_pos, box2_pos):
         '''
@@ -241,46 +285,9 @@ class GridTransform:
             cv2.putText(image, "{}:{:.2f} ".format(class_name,class_score), (startX, y), cv2.FONT_HERSHEY_SIMPLEX,	0.65, (0, 255, 0), 2)
         return image
 
-    
-    def transform_from_grid(self,bboxes,labels,image):
-        (h, w) = image.shape[:2]
-        M = h//self.no_grids
-        N = w//self.no_grids
-
-        for y in range(0,h,M):
-            for x in range(0, w, N):
-                y1 = y + M
-                x1 = x + N
-                tiles = image[y:y+M,x:x+N]
-                cv2.rectangle(image, (x, y), (x1, y1), (100, 100, 100))
-
-        for B in range(2):
-            cx = bboxes[B*5+1,...]
-            cy = bboxes[B*5+2,...]
-            w_obj = bboxes[B*5+3,...]
-            h_obj = bboxes[B*5+4,...]
-            for (row,i) in enumerate(bboxes[B*5,...]):
-                for (col,j) in enumerate(i):
-                    label_pos = np.argmax(labels[:20,row,col],axis=0)
-                    class_score = j* labels[label_pos,row,col]
-                    if class_score > 0.25:
-                        class_name = classes[label_pos]
-                        cX_imag = col/self.no_grids + cx[row,col]/self.no_grids
-                        cY_imag = row/self.no_grids + cy[row,col]/self.no_grids
-
-                        startX = int((cX_imag-w_obj[row,col]/2)*w)
-                        startY = int((cY_imag-h_obj[row,col]/2)*h)
-                        endX = int((cX_imag+w_obj[row,col]/2)*w)
-                        endY = int((cY_imag+h_obj[row,col]/2)*h)
-                        #print(startX,startY,endX,endY,cX_imag,cY_imag)
-                        
-                        # draw the predicted bounding box and class label on the image
-                        y = startY - 10 if startY - 10 > 10 else startY + 10
-                        image = cv2.circle(image, (int(cX_imag*w),int(cY_imag*h)), radius=3, color=(0, 0, 255), thickness=-1)
-                        cv2.rectangle(image, (startX, startY), (endX, endY),
-                            (0, 255, 0), 2)
-                        cv2.putText(image, "{}: {}".format(class_name,class_score), (startX, y), cv2.FONT_HERSHEY_SIMPLEX,	0.65, (0, 255, 0), 2)
-        return image
+    """
+    FROM HERE WE CALCULATE mAP!!!!
+    """
 
     def nms_for_mAP(self,bboxes,labels,image_pos,conf_thresh = 0.8,nms_iou_cutoff = 0.05):
         
@@ -374,7 +381,8 @@ class GridTransform:
         for i in range(pred_boxes.shape[0]):
             nms_boxes = self.nms_for_mAP(pred_boxes[i],pred_classes[i],i)
             for prediction in nms_boxes:
-                batch_pred_boxes.append(prediction)
+                batch_pred_boxes.append(prediction) ## list of pred boxes in the entire batch [the image the box belongs to, label, confidence, x1, y1, x2, y2]
+            
             
         
         batch_true_boxes = []
@@ -403,7 +411,7 @@ class GridTransform:
                 endY = (cy_imag+h_obj/2)
                     
 
-                batch_true_boxes.append([i,label_pos,1,startX, startY, endX, endY])
+                batch_true_boxes.append([i,label_pos,1,startX, startY, endX, endY])  ## list of true boxes in the entire batch [the image the box belongs to, label, confidence, x1, y1, x2, y2]
         
         epsilon = 1e-6
         average_precision = []
@@ -425,6 +433,7 @@ class GridTransform:
             # ammount_bboxes = {0:torch.tensor[0,0,0], 1:torch.tensor[0,0,0,0,0]}
             for key, val in amount_bboxes.items():
                 amount_bboxes[key] = np.zeros(val)
+
             detections.sort(key=lambda x: x[2], reverse=True)
             TP = np.zeros((len(detections)))
             FP = np.zeros((len(detections)))
@@ -446,7 +455,7 @@ class GridTransform:
                 for idx, gt in enumerate(ground_truth_img):
                     iou = self.iou_map(
                     detection[3:],
-                    gt[3:],
+                    gt[3:]
                     
                 )
 
@@ -479,8 +488,6 @@ class GridTransform:
         y = tf.numpy_function(self.mAP_numpy, [y_true,y_pred], np.float32)
         return y
 #### CONTINUAT ASA PENTRU CA MERGE CU TF.NUMPY_FUNC DOAR DE TERMINAT mAP_NUMPY 
-
-            
 
 
 """
