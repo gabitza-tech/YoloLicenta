@@ -111,7 +111,7 @@ print("[INFO] saving val image paths...")
 f = open("output/val.txt", "w")
 f.write("\n".join(valPaths))
 f.close()
-
+"""
 model = ResNet50(include_top=False,weights='imagenet', input_shape=(224,224,3))
 #model = EfficientNetB4(include_top=False,weights='imagenet', input_shape=(224,224,3))
 
@@ -119,36 +119,36 @@ for layer in model.layers:
     layer.trainable=False
 
 flatten = Flatten()(model.output)
-head = Dense(2048,name='fc_1')(flatten)
+head = Dense(4096,name='fc_1')(flatten)
 head = LeakyReLU(alpha=0.3)(head)
-head = Dropout(0.7)(head)
+head = Dropout(0.75)(head)
 head = Dense((len(classes)+B*5)*no_grids*no_grids, activation = 'sigmoid', name = 'fc_3')(head)#(len(classes)+B*5)*no_grids*no_grids
 
 detector = Model(inputs=model.input,outputs = head)
 """
-detector = load_model('output/resnet_9grids.hdf5', custom_objects = {"YoloLoss":YoloLoss})
+detector = load_model('output/resnet_9grids_warm.hdf5', custom_objects = {"YoloLoss":YoloLoss,"mAP":GT.mAP})
 
 #for layer in detector.layers[:]:
 #    layer.trainable=False
 
-#for layer in detector.layers[-98:]:
-#    layer.trainable=True
-"""
+for layer in detector.layers[39:]:
+    layer.trainable=True
+
 for (i,layer) in enumerate(detector.layers[:]):
     print(i,layer.name,layer.trainable)
 
 def step_decay(epoch):
-    if epoch < 60:
+    if epoch < 30:
         lr = 0.00001
         return lr
-    if epoch > 59:
+    if epoch > 29:
         lr = 0.000001
         return lr
 
 
 plot_model(detector, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
 
-fname = os.path.sep.join(["output/resnet_9grids_warm.hdf5"])
+fname = os.path.sep.join(["output/resnet_9grids_fine_tune.hdf5"])
 checkpoint = ModelCheckpoint(fname, monitor="loss", save_best_only=True, mode = "min", verbose=1)
 tensorboardname = "Pascal-model-{}".format(int(time.time()))
 tensorboard = TensorBoard(log_dir='logs/{}'.format(tensorboardname))
@@ -164,7 +164,7 @@ loss.__name__ = "YoloLoss"
 # initialize the optimizer, compile the model, and show the model
 # summary
 
-lr = 0.000001
+lr = 0.00001
 opt = Adam(learning_rate=lr)
 detector.compile(loss=loss, optimizer=opt, metrics=[GT.mAP])#'mean_squared_error'
 
@@ -175,7 +175,7 @@ print("[INFO] training model...")
 H = detector.fit(
 	trainImages,trainLabels,
 	validation_data =(valImages,valLabels),
-	batch_size=16,
+	batch_size=4,
 	epochs=250,
     callbacks = callbacks,
 	verbose=1)
