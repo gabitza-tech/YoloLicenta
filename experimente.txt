@@ -322,6 +322,8 @@ Continuare:
 
 Exp 29:
 -4096, 9 grids, 16 batch, lr = 0.000001, leaky 0.3, drop 0.75
+- loss: 3.1556 - mAP: 4.1682e-04 - val_loss: 3.8516 - val_mAP: 3.1271e-04
+-overfit de la epoca 80, val loss stagnat de mult
 NEXT:
 - reincercat cu lr de 0.001 si 0.0001 sa vad daca merge in nan si sa scad treptat lr-ul cu Reduce on Plateau
 -marit training/test ratio 0.9/0.1 (DONE)
