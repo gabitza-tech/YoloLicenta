@@ -25,6 +25,8 @@ class VOCdataset:
         self.labels = []
         self.imagePaths = []
         self.break_count = 0
+        self.width_image = 224
+        self.height_image = 224
 
     def read_content(self,xml_file:str):
         tree = ET.parse(xml_file)
@@ -69,8 +71,8 @@ class VOCdataset:
             for bbox in bboxes_image:
                 w_image=bbox[5]
                 h_image=bbox[6]
-                label_bbox1 = bbox[0]
-                label_bbox = classes.index(label_bbox1)
+                label_name = bbox[0]
+                label_bbox = classes.index(label_name)
                 center_x,center_y, width,height = self.center_and_hw(bbox[1],bbox[2],bbox[3],bbox[4])
                 center_x,center_y, width,height = round(center_x/w_image,3),round(center_y/h_image,3), round(width/w_image,3),round(height/h_image,3) ## we normalise the coordinates of the bboxes
                 bboxes_per_image.append([center_x,center_y, width,height])
@@ -81,13 +83,14 @@ class VOCdataset:
                 #cv2.putText(image, label_bbox1,(bbox[1],startY), cv2.FONT_HERSHEY_SIMPLEX,
   	            #        0.65, (0, 255, 0), 2)
                 #cv2.rectangle(image,(bbox[1],bbox[2]),(bbox[3],bbox[4]),(0,255,0),1)
-            image1 = load_img(imagePath, target_size=(224, 224))
-            image1 = img_to_array(image1)
+            
+            image = load_img(imagePath, target_size=(self.width_image, self.height_image))
+            image = img_to_array(image)
 
             self.bboxes.append(bboxes_per_image)
             self.labels.append(labels_per_image)
             self.no_objects.append(no_objects_per_image)
-            self.data.append(image1)
+            self.data.append(image)
             self.imagePaths.append(imagePath)
              
             #cv2.imshow('',image)
