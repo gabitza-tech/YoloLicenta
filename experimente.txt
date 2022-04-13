@@ -338,6 +338,7 @@ Exp 30:
 Exp 31:
 - warm 7 grids, 2048-leaky 0.2-1024-leaky 0.2-sigmoid + in loss si mAP ptr class folosesc softmax peste sigmoid
 - 300 epoci cu lr de 0.00001 ct si batch de 8
+- in loss insumez noobject loss ul ptr ambele predictii -- vreau sa elimin erorile de detectie cat mai bine, multe predictii pot fi de la al doilea bbox care face predictii proaste si nu de la cel cu iou-ul cel mai bun.
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
