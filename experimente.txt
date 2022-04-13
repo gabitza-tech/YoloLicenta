@@ -237,6 +237,7 @@ Experiment 17, 24.03:
 - lr 0.00001 ( cu 0.001,0.0001 nu a mers prea bine, scadea incet )
 - end: 293s 428ms/step - loss: 3.3784 - mae: 0.1380 - val_loss: 68.3267 - val_mae: 0.1349
 Epoch 00250: loss did not improve from 3.35610
+
 OBS:- Desi val_loss-ul e mult mai mare decat loss-ul pe train, predictiile sunt foarte bune si precise in general. Class score-ul este destul de mic totusi si ar trebui sa ma concentrez sa obtin o eroare de clasificare mai mica. 
 - inferenta se face cu 13-14FPS in medie
 - am adaugt Non Maximum Suppression
@@ -325,8 +326,21 @@ Exp 29:
 - loss: 3.1556 - mAP: 4.1682e-04 - val_loss: 3.8516 - val_mAP: 3.1271e-04
 -overfit de la epoca 80, val loss stagnat de mult
 Continuare:
+-9 grids warm as load_model
 - dezghetat de la blocu 3 tot si antrenat cu batch de 4 si ct lr  de 0.00001 250 epoci
+-  epoch 250:876s 284ms/step - loss: 0.1864 - mAP: 0.0586 - val_loss: 3.7649 - val_mAP: 0.0277
+- predictiile nu detecteaza nimic
 
+Exp 30:
+-warm cu 7 grids ptr 250 epoci cu linear output( TREBUIE SCHIMBAT SI IN PREDICT SI MAP OUTPUTURILE CU SIGMOID SI SOFTMAX)
+- mAP 10% dupa fine tune 250 cu 4096 neuroni 7 grids
+
+Exp 31:
+- warm 7 grids, 2048-leaky 0.2-1024-leaky 0.2-sigmoid + in loss si mAP ptr class folosesc softmax peste sigmoid
+- 300 epoci cu lr de 0.00001 ct si batch de 8
+
+OBSERVATIE:
+-adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
 NEXT:
 - reincercat cu lr de 0.001 si 0.0001 sa vad daca merge in nan si sa scad treptat lr-ul cu Reduce on Plateau
 -marit training/test ratio 0.9/0.1 (DONE)
