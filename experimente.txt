@@ -335,10 +335,24 @@ Exp 30:
 -warm cu 7 grids ptr 250 epoci cu linear output( TREBUIE SCHIMBAT SI IN PREDICT SI MAP OUTPUTURILE CU SIGMOID SI SOFTMAX)
 - mAP 10% dupa fine tune 250 cu 4096 neuroni 7 grids
 
+!!!!!!!!!!!!!!!!!! BUN
 Exp 31:
-- warm 7 grids, 2048-leaky 0.2-1024-leaky 0.2-sigmoid + in loss si mAP ptr class folosesc softmax peste sigmoid
+- 7 grids, 2048-leaky 0.2-1024-leaky 0.2-sigmoid + in loss si mAP ptr class folosesc softmax peste sigmoid
 - 300 epoci cu lr de 0.00001 ct si batch de 8
 - in loss insumez noobject loss ul ptr ambele predictii -- vreau sa elimin erorile de detectie cat mai bine, multe predictii pot fi de la al doilea bbox care face predictii proaste si nu de la cel cu iou-ul cel mai bun.
+- Epoch 300/300
+1542/1542 [==============================] - 411s 266ms/step - loss: 1.8451 - mAP: 0.1942 - val_loss: 3.8271 - val_mAP: 0.0024
+OBSERVATIE:
+- pe setul de train overfit f bun, fara multe detectie proaste si majoritatea erorilor erau de clasificare
+- modelul parea ca mai invata
+- pe testare si validare nu detecteaza mai nimic, overfit adevarat
+
+Exp 32:
+-- adaugat drop de 0.6 la ultima retea
+-- output linear cu sigmoid pe box si has_obj, softmax pe clase. Ptr class loss am schimbat si folosesc binary crossentropy: loss = label * (-1) * log(pred) + (1 - label) * (-1) * log(1 - pred)
+-- antrenat 600 epoci lr 1e-5
+-- am schimbat si in transforms si predict_pascal cu softmax si sigmoid
+
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
