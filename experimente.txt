@@ -352,7 +352,12 @@ Exp 32:
 -- output linear cu sigmoid pe box si has_obj, softmax pe clase. Ptr class loss am schimbat si folosesc binary crossentropy: loss = label * (-1) * log(pred) + (1 - label) * (-1) * log(1 - pred)
 -- antrenat 600 epoci lr 1e-5
 -- am schimbat si in transforms si predict_pascal cu softmax si sigmoid
+--epoch 120:  loss: 0.7638 - mAP: 0.0281 - val_loss: 10.8165 - val_mAP: 6.2402e-04
 
+Exp 33:
+-- 2048-leaky-drop 0.75-1024-drop 0.75
+-- 600 epoci
+-- lr 0.0001
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
