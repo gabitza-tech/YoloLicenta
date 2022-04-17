@@ -226,6 +226,7 @@ Experiment 16, 24.03:
 - end: Epoch 00099: loss did not improve from 8.87421
 Epoch 100/250
 1542/1542 [==============================] - 459s 298ms/step - loss: 8.6825 - mae: 1.4237 - val_loss: 47.8476 - val_mae: 1.3022
+
 !!!!BEST!!!!
 Experiment 17, 24.03:
 - dezghetat tot, 2048 dense, leaky 0.1, drop 0.6, output sigmoid
@@ -357,7 +358,14 @@ Exp 32:
 Exp 33:
 -- 2048-leaky-drop 0.75-1024-drop 0.75
 -- 600 epoci
--- lr 0.0001
+-- lr 0.0001 apoi scazut la 0.00001
+-- naspa map ul mic
+
+Exp 34:
+--- 2048 - leaky 0.2 - drop 0.7 - linear output, sum over loss si restu de schimbari cu softmax etc.
+--- lr = 0.0001
+--- batch = 16
+--- 600 epochs
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
