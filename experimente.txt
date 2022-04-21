@@ -365,7 +365,8 @@ Exp 34:
 --- 2048 - leaky 0.2 - drop 0.7 - linear output, sum over loss si restu de schimbari cu softmax etc.
 --- lr = 0.0001
 --- batch = 16
---- 600 epochs
+--- 515 epochs
+--- loss: 4.1148 - mAP: 0.1002 - val_loss: 132.7442 - val_mAP: 0.0104
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
