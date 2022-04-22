@@ -374,6 +374,14 @@ Exp 35:
 --- 800 epoci, lr = 0.00005
 --- naspa dupa 70 de epoci overfit deja
 
+Exp 36:
+---4096 cu l2 reg, leaky 0.1, sigmoid, loss normal dar cu tf.nn.L2_loss
+---pana la epoca 76 cu 0.0001(mai mare dadea nan)
+--Epoch 00076: mAP improved from 0.27146 to 0.27199, saving model to output/best_model_retry.hdf5
+Epoch 77/150
+3083/3083 [==============================] - 522s 169ms/step - loss: 0.0629 - mAP: 0.2770 - val_loss: 1.8692 - val_mAP: 0.0175
+--- de la 76 fol 0.00001
+
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
 NEXT:
