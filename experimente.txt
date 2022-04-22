@@ -356,7 +356,7 @@ Exp 32:
 --epoch 120:  loss: 0.7638 - mAP: 0.0281 - val_loss: 10.8165 - val_mAP: 6.2402e-04
 
 Exp 33:
--- 2048-leaky-drop 0.75-1024-drop 0.75
+-- 2048 l2 reg-leaky-drop 0.75-1024-drop 0.75
 -- 600 epoci
 -- lr 0.0001 apoi scazut la 0.00001
 -- naspa map ul mic
@@ -367,6 +367,12 @@ Exp 34:
 --- batch = 16
 --- 515 epochs
 --- loss: 4.1148 - mAP: 0.1002 - val_loss: 132.7442 - val_mAP: 0.0104
+--- map ul inca crestea dar incet
+
+Exp 35:
+--- 2048, leaky 0.1 - drop 0.6 - sigmoid , loss - bce la class si in loc de mse am pus mae
+--- 800 epoci, lr = 0.00005
+--- naspa dupa 70 de epoci overfit deja
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
