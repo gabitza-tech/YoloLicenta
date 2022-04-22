@@ -375,7 +375,7 @@ Exp 35:
 --- naspa dupa 70 de epoci overfit deja
 
 Exp 36:
----4096 cu l2 reg, leaky 0.1, sigmoid, loss normal dar cu tf.nn.L2_loss
+---4096 cu l2 reg, leaky 0.1, sigmoid, loss normal dar cu tf.nn.L2_loss, batch 4 cu  layers unfrozen de la 39 in sus
 ---pana la epoca 76 cu 0.0001(mai mare dadea nan)
 --Epoch 00076: mAP improved from 0.27146 to 0.27199, saving model to output/best_model_retry.hdf5
 Epoch 77/150
