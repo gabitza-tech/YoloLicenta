@@ -385,6 +385,19 @@ Epoch 00084: mAP did not improve from 0.31372
 Epoch 85/150
 3083/3083 [==============================] - 529s 171ms/step - loss: 0.0060 - mAP: 0.3102 - val_loss: 1.8800 - val_mAP: 0.0172
 
+Exp 37:
+1)warm
+- 0.85 train si 0.15 validation, fara test set
+- conv2d(1024,3,1,no_pad,l2_red,henormal_init)-leaky0.1-BN-drop0.4-conv2d(512,3,1,no_pad,l2_red,henormal_init)-leaky0.1-BN-drop0.4-flatten-dense_sigmoid
+- lr 0.0001 pana la 30, 30-55 0.00005, >55 0.00001
+- batch 32
+Epoch 150/150
+455/455 [==============================] - 144s 316ms/step - loss: 1.7240 - mAP: 0.0012 - val_loss: 2.1576 - val_mAP: 0.0018
+-- pe la epoca 60 incepe overfit pe warm =>>> as putea lasa cu 0.00005 mai mult timp
+2)fiine tune
+-- same network unfreeze de la 39 incolo(de la al 3-lea block)
+--batch 8
+-- lr 0.0001, folosit ctrl+c method
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
