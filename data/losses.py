@@ -1,3 +1,4 @@
+from cmath import log
 import numpy as np
 from tensorflow import keras
 #from keras.losses import MeanSquaredError
@@ -26,9 +27,9 @@ class YoloLoss:
         self.lambda_obj = 1.0
         self.lambda_noobj = 0.5
         self.lambda_coord = 5.0
-        self.lambda_class = 2.0
+        self.lambda_class = 1.0
         self.ious = []
-        
+
 
     def calc_iou(self, boxes1, boxes2, scope='iou'):
         """calculate ious
@@ -162,8 +163,8 @@ class YoloLoss:
 
         #batch,4,6,6
 
-        coord_loss =tf.reduce_sum(tf.square(boxes_delta),axis=[3,2,1,0])*self.lambda_coord
-        print("coord loss:{}".format(coord_loss))
+        coord_loss = tf.nn.l2_loss(boxes_delta)*self.lambda_coord#tf.reduce_sum(tf.square(boxes_delta),axis=[3,2,1,0])*self.lambda_coord
+        #print("coord loss:{}".format(coord_loss))
         #x = K.print_tensor(coord_loss)
         
         #debug bun
@@ -171,12 +172,14 @@ class YoloLoss:
         """
         CLASSIFICATION LOSS
         """
+        #loss = label * (-1) * log(pred) + (1 - label) * (-1) * log(1 - pred)
         class_delta = true_obj * (true_class-pred_class)
-        
+        #class_delta = (-1)*(true_obj*true_class)*tf.math.log(true_obj*pred_class+1e-6)-(1-true_obj*true_class)*tf.math.log(1-pred_class*true_obj+1e-6)
+
         #debug bun 
         
-        cls_loss = tf.reduce_sum(tf.square(class_delta),axis=[3,2,1,0])*self.lambda_class
-        print("class los:{}".format(cls_loss))
+        cls_loss = tf.nn.l2_loss(class_delta)*self.lambda_class# tf.reduce_sum(tf.square(class_delta),axis=[3,2,1,0])*self.lambda_class
+        #print("class los:{}".format(cls_loss))
         #x = K.print_tensor(cls_loss)
         
         #debug bun
@@ -188,19 +191,19 @@ class YoloLoss:
         noobject_mask = tf.ones_like(object_mask, dtype=tf.float32) - object_mask
                 
         object_delta = true_obj*(object_mask - best_has_obj)#object_mask * (true_obj - best_has_obj)#
-        noobject_delta = noobject_mask * best_has_obj
+        noobject_delta = noobject_mask * pred_obj
         
         
-        object_loss = tf.reduce_sum(tf.square(object_delta), axis=[3,2,1,0]) * self.lambda_obj
-        noobject_loss = tf.reduce_sum(tf.square(noobject_delta), axis=[3,2,1,0]) * self.lambda_noobj
+        object_loss = tf.nn.l2_loss(object_delta)*self.lambda_obj#tf.reduce_sum(tf.square(object_delta), axis=[3,2,1,0]) * self.lambda_obj
+        noobject_loss = tf.nn.l2_loss(noobject_delta)*self.lambda_noobj#tf.reduce_sum(tf.square(noobject_delta), axis=[3,2,1,0]) * self.lambda_noobj
         
-        print("object loss:{}".format(object_loss))
-        print("no object loss:{}".format(noobject_loss))
+        #print("object loss:{}".format(object_loss))
+        #print("no object loss:{}".format(noobject_loss))
 
         #debug bun
         
-        loss = coord_loss+cls_loss+object_loss+noobject_loss
-       
+        loss = (coord_loss+cls_loss+object_loss+noobject_loss)/tf.cast(tf.shape(y_pred)[0],tf.float32)
+
         return loss 
         #x = K.print_tensor(K.mean(K.square(y_pred - y_true), axis=-1))
         #return K.mean(K.square(y_pred - y_true), axis=-1)
