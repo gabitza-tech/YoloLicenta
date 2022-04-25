@@ -418,6 +418,9 @@ Epoch 250/250
 - face overfit repede in primele epoci 7-8: train 1.7 si val 2.1
 -----
 -deblocat de la blocu conv4
+-cu 0.00001 tot face ovrfit
+-cu 0.000001 tot face overfit de la epoca 10
+
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
