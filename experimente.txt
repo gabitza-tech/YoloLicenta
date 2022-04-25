@@ -415,6 +415,9 @@ Epoch 250/250
 - deblocat de la layeru 19 in sus
 - 0.00001
 - 250 epoci
+- face overfit repede in primele epoci 7-8: train 1.7 si val 2.1
+-----
+-deblocat de la blocu conv4
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
