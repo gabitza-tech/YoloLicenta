@@ -13,6 +13,7 @@ import cv2
 import os
 import time
 from tensorflow.keras.utils import plot_model
+import tensorflow as tf
 
 classes = ['person' , 'bird', 'cat', 'cow',
            'dog', 'horse', 'sheep', 'aeroplane',
@@ -29,15 +30,16 @@ if "text/plain" == filetype:
 	# load the image paths in our testing file
 	imagePaths = open('output/val.txt').read().strip().split("\n")
 
-
-print("Load trained model")
-model = load_model('output/7x7epoch250loss3p37.hdf5', custom_objects = {"YoloLoss":YoloLoss})
-#plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
-
 no_grids=7
 B=2
 GT = GridTransform(B,no_grids)
 fps_inference = []
+
+print("Load trained model")
+model = load_model('output/best_model_retry.hdf5', custom_objects = {"YoloLoss":YoloLoss,"mAP":GT.mAP})
+#plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
+
+
 for (step,imagePath) in enumerate(imagePaths):
     if step ==600:
         break
@@ -54,7 +56,7 @@ for (step,imagePath) in enumerate(imagePaths):
         
         prediction = np.reshape(prediction[0],(30,no_grids,no_grids))
         
-        boxPred = prediction[20:30,...]       
+        boxPred = prediction[20:30,...]
         classPred = prediction[:20,...]
         
         image1 = cv2.imread(imagePath)
