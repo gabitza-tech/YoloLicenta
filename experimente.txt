@@ -397,7 +397,24 @@ Epoch 150/150
 2)fiine tune
 -- same network unfreeze de la 39 incolo(de la al 3-lea block)
 --batch 8
--- lr 0.0001, folosit ctrl+c method
+-- lr 0.00005, folosit ctrl+c method
+Epoch 00149: mAP improved from 0.18256 to 0.18350, saving model to output/best_model_retry.hdf5
+Epoch 150/150
+1820/1820 [==============================] - 508s 279ms/step - loss: 0.2217 - mAP: 0.1844 - val_loss: 2.0869 - val_mAP: 0.0168
+
+Exp 38:
+1) warm:
+- conv2d(512,3,1,no_pad,l2_red,henormal_init)-leaky0.1-BN-drop0.4-conv2d(512,3,1,no_pad,l2_red,henormal_init)-leaky0.1-BN-drop0.4-flatten-dense_sigmoid
+- lr 0.00001
+- batch 32
+Epoch 00249: val_loss did not improve from 2.40390
+Epoch 250/250
+455/455 [==============================] - 121s 266ms/step - loss: 1.7963 - mAP: 0.0017 - val_loss: 2.4232 - val_mAP: 0.0018
+-a facut overfit pe la epoca 160, dar nu f mare. Curbele f apropiate
+2) fine tune
+- deblocat de la layeru 19 in sus
+- 0.00001
+- 250 epoci
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
