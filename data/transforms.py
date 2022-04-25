@@ -282,14 +282,14 @@ class GridTransform:
             image = cv2.circle(image, (int(cX_imag*w_img),int(cY_imag*h_img)), radius=3, color=(0, 0, 255), thickness=-1)
             cv2.rectangle(image, (startX, startY), (endX, endY),
                 (0, 255, 0), 2)
-            cv2.putText(image, "{}:{:.2f} ".format(class_name,class_score), (startX, y), cv2.FONT_HERSHEY_SIMPLEX,	0.65, (0, 255, 0), 2)
+            cv2.putText(image, "{}:{:.2f} ".format(class_name,confidence_score), (startX, y), cv2.FONT_HERSHEY_SIMPLEX,	0.65, (0, 255, 0), 2)
         return image
 
     """
     FROM HERE WE CALCULATE mAP!!!!
     """
 
-    def nms_for_mAP(self,bboxes,labels,image_pos,conf_thresh = 0.8,nms_iou_cutoff = 0.05):
+    def nms_for_mAP(self,bboxes,labels,image_pos,conf_thresh = 0.5,nms_iou_cutoff = 0.5):
         
         
         # I concatenate the predictions from both bounding boxes and labels in a (5,98) shaped array (p,cx_cell,cy_cell,w,h)
@@ -373,6 +373,9 @@ class GridTransform:
 
         pred_boxes = y_pred[:,20:,...]
         pred_classes = y_pred[:,:20,...]
+
+        #pred_boxes = y_pred[:,20:,...]
+        #pred_classes = y_pred[:,:20,...]
 
         true_boxes = y_true[:,20:,...]
         true_classes =  y_true[:,:20,...]
@@ -487,7 +490,7 @@ class GridTransform:
     def mAP(self,y_true,y_pred):
         y = tf.numpy_function(self.mAP_numpy, [y_true,y_pred], np.float32)
         return y
-#### CONTINUAT ASA PENTRU CA MERGE CU TF.NUMPY_FUNC DOAR DE TERMINAT mAP_NUMPY 
+
 
 
 """
