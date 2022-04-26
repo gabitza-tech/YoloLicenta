@@ -426,7 +426,11 @@ Exp 39   1650930777:
 -conv2d 1024(kernel 1,reg,initHE)-leaky0.2-bn-drop0.5-conv2d 512(kernel 1,reg,initHE)-leaky0.2-bn-drop0.5-conv2d 30 ca output(am pus si regularizare si initHE din greseala, dar poate e bine) si linear ca activare=> 7x7x30 output shape
 - am pus sigmoid pe box si conf loss si softmax pe class loss
 -init lr = 0.00001(mai mare dadea nan) si step decay cu drop de 0.5 la fiecare 15 epoci
-- deloc overfit-- putea fi oprit pe la epoca 150
+- deloc overfit-- putea fi oprit pe la epoca 150  dar a scazut pana la 2.1 la epoca 250 
+- fcn7-warm2
+exp 40: 
+1)warm:
+-la fel network dar fara regularizare in output layer si reduceLRonplateau cu patience de 10 si factor de 0.6
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
