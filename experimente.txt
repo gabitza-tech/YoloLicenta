@@ -437,6 +437,10 @@ Epoch 250/250
 228/228 [==============================] - 128s 562ms/step - loss: 2.0091 - mAP: 0.0000e+00 - val_loss: 2.0979 - val_mAP: 0.0000e+00
 - puteam opri la epoca 70-80, gapul nu e foarte mare. Nu stiu daca mai mergea antrenata si mai bine.
 - poate mai merge marita reteaua
+2) tune:
+- unfreeze toata reteaua, batch 8
+- 0.0001 pare ca face overfit early,nu sta aproape de training loss in primele epoci
+-overfit cu 0.00005 dar sacdea mai rapid train loss ul
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
