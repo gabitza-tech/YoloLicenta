@@ -427,10 +427,16 @@ Exp 39   1650930777:
 - am pus sigmoid pe box si conf loss si softmax pe class loss
 -init lr = 0.00001(mai mare dadea nan) si step decay cu drop de 0.5 la fiecare 15 epoci
 - deloc overfit-- putea fi oprit pe la epoca 150  dar a scazut pana la 2.1 la epoca 250 
-- fcn7-warm2
+- fcn7-warm 
 exp 40: 
 1)warm:
--la fel network dar fara regularizare in output layer si reduceLRonplateau cu patience de 10 si factor de 0.6
+-la fel network dar fara regularizare in output layer si reduceLRonplateau cu patience de 10 si factor de 0.6, drop e 0.3 acu
+-
+Epoch 00249: val_loss did not improve from 2.08722
+Epoch 250/250
+228/228 [==============================] - 128s 562ms/step - loss: 2.0091 - mAP: 0.0000e+00 - val_loss: 2.0979 - val_mAP: 0.0000e+00
+- puteam opri la epoca 70-80, gapul nu e foarte mare. Nu stiu daca mai mergea antrenata si mai bine.
+- poate mai merge marita reteaua
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
