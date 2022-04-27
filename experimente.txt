@@ -444,6 +444,9 @@ Epoch 250/250
 
 LRFINDER:
 -- lr=0.005 max cu batch 64 net cu 1024-drop0.3-1024-drop0.4
+--- ptr 0.005-0.0005 best weight_decay este 0.003
+- 150 epoci antrenare
+- 0.2 steep decrease din epoci 
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
