@@ -446,7 +446,14 @@ LRFINDER:
 -- lr=0.005 max cu batch 64 net cu 1024-drop0.3-1024-drop0.4
 --- ptr 0.005-0.0005 best weight_decay este 0.003
 - 150 epoci antrenare
-- 0.2 steep decrease din epoci 
+- 0.2 steep decrease din epoci, 0.1 sample
+- Epoch 00149: val_loss did not improve from 2.16368
+Epoch 150/150
+228/228 [==============================] - 131s 573ms/step - loss: 3.5919 - mAP: 0.0000e+00 - class_loss: 1.0424 - box_loss: 1.2850 - obj_loss: 0.0676 - noobj_loss: 1.1969 - val_loss: 5.5839 - val_mAP: 0.0000e+00 - val_class_loss: 1.0390 - val_box_loss: 1.4219 - val_obj_loss: 0.0425 - val_noobj_loss: 3.0874
+- n a scazt de 2.1 val lossul ca best
+------
+-scos toate drop urile si initializarile
+-repetat ptr 250epoci
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
