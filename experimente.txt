@@ -455,6 +455,18 @@ Epoch 150/150
 -scos toate drop urile si initializarile
 -repetat ptr 250epoci
 
+exp41:
+-cu sgd one cycle policy toata reteaua dezghetat si inmultit cu 2 loss ul
+epoca19
+402/402 [==============================] - 285s 709ms/step - loss: 2.0606 - mAP: 0.0065 - class_loss: 0.5489 - box_loss: 1.1984 - obj_loss: 0.2480 - noobj_loss: 0.0652 - val_loss: 4.0349 - val_mAP: 0.0077 - val_class_loss: 1.4412 - val_box_loss: 2.1846 - val_obj_loss: 0.2425 - val_noobj_loss: 0.1658
+ - lr: 0.00283 - momentum: 0.89 
+ - lasat 100 de epoci a facut overfit, train ul invata map 30%
+ exp 42:
+ - lasat cu 1024-0.8dro-512-0.8drop si diferite sgd uri, impart loss ul box calss si obj la nr de obiecte pe batch si noobj la nr de imagini per batch
+ - tot face overfit la 1.6
+ --
+ - incerc sa deblochez doar de la stage ul 3 in sus(de la layeru 40 in sus)
+
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
 NEXT:
