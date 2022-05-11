@@ -466,6 +466,14 @@ epoca19
  - tot face overfit la 1.6
  --
  - incerc sa deblochez doar de la stage ul 3 in sus(de la layeru 40 in sus)
+ 
+ 
+ 
+ -----------------
+ mobilenet:
+ Epoch 19/40
+482/482 [==============================] - 929s 2s/step - loss: 3.8898 - mAP: 0.0943 - val_loss: 5.7095 - val_mAP: 0.0586
+-dupa epoca 19 la 0.01 lr inca 30 de epoci nu face decat overfit
 
 OBSERVATIE:
 -adaugat augmentare pe imagini si neaparat reincercat reteaua cea mai buna sa vad cat mAP are de fapt
