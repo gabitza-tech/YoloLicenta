@@ -5,6 +5,8 @@ import cv2
 import tensorflow as tf
 from collections import Counter
 
+
+
 classes = ['person' , 'bird', 'cat', 'cow',
            'dog', 'horse', 'sheep', 'aeroplane',
            'bicycle', 'boat', 'bus', 'car',
@@ -28,11 +30,11 @@ class GridTransform:
             cell_pos = []
             cell_centers = []
             for bbox in bbox_image:
-                pos_cell_row = int(bbox[1]/self.h_cell) ## linie, y
-                pos_cell_column = int(bbox[0]/self.w_cell) ## coloana, x
+                pos_cell_row = int(bbox[1]/self.h_cell) # the index of the cell on the row
+                pos_cell_column = int(bbox[0]/self.w_cell) # the index of the cell on the column
                 
-                relative_cx = (bbox[0]-pos_cell_column*self.w_cell)/self.w_cell
-                relative_cy = (bbox[1]-pos_cell_row*self.h_cell)/self.h_cell
+                relative_cx = (bbox[0]-pos_cell_column*self.w_cell)/self.w_cell #x coordinate center of bbox relative to cell it exists in
+                relative_cy = (bbox[1]-pos_cell_row*self.h_cell)/self.h_cell #y coordinate center of bbox relative to cell it exists in
 
                 cell_pos.append([pos_cell_row,pos_cell_column])
                 cell_centers.append([relative_cx, relative_cy, bbox[2], bbox[3]])
@@ -50,10 +52,11 @@ class GridTransform:
             label_grid = np.zeros((len(classes),self.no_grids,self.no_grids))
             for j in range(no_objects[i]):
                 
-                #  [box_matrix_index,row,column]
+                # In order to add values of the bbox and labels, we need to know the indexes of the cells that contain objects, given by the cell_pos_image list
+                # and the centers relative to the cell they are in
 
-                bboxes_grid[1][cell_pos_image[i][j][0]][cell_pos_image[i][j][1]] = cell_centers_image[i][j][0]#cx
-                bboxes_grid[2][cell_pos_image[i][j][0]][cell_pos_image[i][j][1]] = cell_centers_image[i][j][1]#cy
+                bboxes_grid[1][cell_pos_image[i][j][0]][cell_pos_image[i][j][1]] = cell_centers_image[i][j][0]#cx_relative_to_cell
+                bboxes_grid[2][cell_pos_image[i][j][0]][cell_pos_image[i][j][1]] = cell_centers_image[i][j][1]#cy_relative_to_cell
                 bboxes_grid[3][cell_pos_image[i][j][0]][cell_pos_image[i][j][1]] = cell_centers_image[i][j][2]#w
                 bboxes_grid[4][cell_pos_image[i][j][0]][cell_pos_image[i][j][1]] = cell_centers_image[i][j][3]#h
                 
@@ -68,6 +71,9 @@ class GridTransform:
         self.labels_tr = np.array(self.labels_tr,dtype='float32')
         return self.bboxes_tr,self.labels_tr
 
+    """
+    Transform and visualize a prediction's bboxes without using NMS
+    """
     def transform_from_grid(self,bboxes,labels,image):
         (h, w) = image.shape[:2]
         M = h//self.no_grids
@@ -108,24 +114,24 @@ class GridTransform:
                         cv2.putText(image, "{}: {}".format(class_name,class_score), (startX, y), cv2.FONT_HERSHEY_SIMPLEX,	0.65, (0, 255, 0), 2)
         return image
 
-    """
-    FROM HERE WE CALCULATE NON MAXIMUM SUPPRESSION
-    """
-
+    #Calculate IoU for NMS function
     def iou_value(self,box1, box2, box1_pos, box2_pos):
         '''
         calculate the IOU of two given boxes
         '''
         (c1x_cell,c1y_cell,w1,h1) = box1
         (c2x_cell,c2y_cell,w2,h2) = box2
-
+        if box1_pos > self.no_grids*self.no_grids-1:
+            box1_pos = box1_pos - self.no_grids*self.no_grids
+        if box2_pos > self.no_grids*self.no_grids-1:
+            box2_pos = box2_pos - self.no_grids*self.no_grids
         """
         first transform the centers relative to a cell to centers relative to the image
         """
         
         row1 = box1_pos // self.no_grids
         col1 = box1_pos % self.no_grids
-        
+
         row2 = box2_pos // self.no_grids
         col2 = box2_pos % self.no_grids
 
@@ -154,9 +160,10 @@ class GridTransform:
         area_intersection = w*h
 
         area_combined = abs((x12-x11)*(y12-y11) + (x22-x21)*(y22-y21) - area_intersection + 1e-3)
+        
         return area_intersection/area_combined
 
-
+    # NMS function
     def nonmax_suppression(self,bboxes,labels,initial_positions, iou_cutoff):
         '''
         Suppress any overlapping boxes with IOU greater than 'iou_cutoff', keeping only
@@ -208,7 +215,10 @@ class GridTransform:
         nms_list = np.asarray(nms_list)
         return nms_list, positions
 
-    def transform_with_nms(self,bboxes,labels,image,conf_thresh = 0.8,nms_iou_cutoff = 0.15):
+    """
+    Transform and visualize a prediction's bboxes using NMS
+    """
+    def transform_with_nms(self,bboxes,labels,image,conf_thresh = 0.5,nms_iou_cutoff = 0.3):
         (h_img, w_img) = image.shape[:2]
         M = h_img//self.no_grids
         N = w_img//self.no_grids
@@ -219,9 +229,9 @@ class GridTransform:
                 x1 = x + N
                 tiles = image[y:y+M,x:x+N]
                 cv2.rectangle(image, (x, y), (x1, y1), (100, 100, 100))
+
+
         #easier to work with 2D vectors
-        bboxes = np.reshape(bboxes,(10,bboxes.shape[1]*bboxes.shape[2]))
-        labels = np.reshape(labels, (20,labels.shape[1]*labels.shape[2]))
         # I concatenate the predictions from both bounding boxes and labels in a (5,98) shaped array (p,cx_cell,cy_cell,w,h)
         # so I can take in consideration both BBOX predictions
         concat_bboxes = np.concatenate((bboxes[:5,...],bboxes[5:10,...]),axis=1)
@@ -242,7 +252,7 @@ class GridTransform:
                 continue
         filtered_conf_bboxes = np.asarray(filtered_conf_bboxes)
         filtered_labels = np.asarray(filtered_labels)
-        
+
         # I apply Non-Maximum Suppression on all the bounding boxes predictions
         # it returns the boxes coordinates and the cell positions for the respective boxes
         nms_box_list, positions = self.nonmax_suppression(filtered_conf_bboxes,filtered_labels,initial_positions,nms_iou_cutoff)        
@@ -255,6 +265,7 @@ class GridTransform:
             h_obj = box[4]
             
             # I return the positions relative to the maximum number of grids, not the concatenated one
+            # because i have 2 boxes that make predictions
             if positions[i] > self.no_grids*self.no_grids-1:
                 positions[i] = positions[i] - self.no_grids*self.no_grids
 
@@ -282,14 +293,14 @@ class GridTransform:
             image = cv2.circle(image, (int(cX_imag*w_img),int(cY_imag*h_img)), radius=3, color=(0, 0, 255), thickness=-1)
             cv2.rectangle(image, (startX, startY), (endX, endY),
                 (0, 255, 0), 2)
-            cv2.putText(image, "{}:{:.2f} ".format(class_name,confidence_score), (startX, y), cv2.FONT_HERSHEY_SIMPLEX,	0.65, (0, 255, 0), 2)
+            cv2.putText(image, "{}:{:.2f} ".format(class_name,class_score), (startX, y), cv2.FONT_HERSHEY_SIMPLEX,	0.65, (0, 255, 0), 2)
         return image
 
     """
-    FROM HERE WE CALCULATE mAP!!!!
+    FROM HERE THE mAP is calculated. We apply NMS for objects above 0.6 confidence and an IOU_threshould of 0.6 on the predictions before passing them to the mAP
     """
 
-    def nms_for_mAP(self,bboxes,labels,image_pos,conf_thresh = 0.5,nms_iou_cutoff = 0.5):
+    def nms_for_mAP(self,bboxes,labels,image_pos,conf_thresh = 0.6,nms_iou_cutoff = 0.6):
         
         
         # I concatenate the predictions from both bounding boxes and labels in a (5,98) shaped array (p,cx_cell,cy_cell,w,h)
@@ -344,10 +355,14 @@ class GridTransform:
             label_pos = np.argmax(labels[:20,positions[i]],axis=0)
             confidence_score = box[0]
             
-            nms_list.append([image_pos, label_pos,confidence_score,startX, startY, endX, endY])
-        
+            """
+            Only the objects that passed the NMS threshold are returned to calculate the mAP
+            """
+
+            nms_list.append([image_pos, label_pos,confidence_score, startX, startY, endX, endY])
+
         return nms_list
-    
+    # IOU to calculate mAP
     def iou_map(self,box1,box2):
         x1 = max(box1[0], box2[0])
         x2 = min(box1[2], box2[2])
@@ -362,7 +377,8 @@ class GridTransform:
         area_combined = abs((box1[2]-box1[0])*(box1[3]-box1[1]) + (box2[2]-box2[0])*(box2[3]-box2[1]) - area_intersection + 1e-3)
         return area_intersection/area_combined
     """
-    Inspirat din https://github.com/aladdinpersson/Machine-Learning-Collection/blob/ac5dcd03a40a08a8af7e1a67ade37f28cf88db43/ML/Pytorch/object_detection/YOLO/utils.py#L7
+    The code for mAP is inspired from: https://github.com/aladdinpersson/Machine-Learning-Collection/blob/ac5dcd03a40a08a8af7e1a67ade37f28cf88db43/ML/Pytorch/object_detection/YOLO/utils.py#L7
+    The tf tensors [y_true,y_pred] are transformed to numpy arrays and then the mAP is calculated.
     """
     def mAP_numpy(self,y_true,y_pred):
     
@@ -373,9 +389,6 @@ class GridTransform:
 
         pred_boxes = y_pred[:,20:,...]
         pred_classes = y_pred[:,:20,...]
-
-        #pred_boxes = y_pred[:,20:,...]
-        #pred_classes = y_pred[:,:20,...]
 
         true_boxes = y_true[:,20:,...]
         true_classes =  y_true[:,:20,...]
@@ -492,7 +505,6 @@ class GridTransform:
         return y
 
 
-
 """
 imageDir = 'dataset/images'
 annotDir = 'dataset/annotations'
@@ -500,7 +512,7 @@ data = []
 bboxes = []
 labels = []
 no_objects = []
-dataset = VOCdataset()
+dataset = VOCdataset(224,224)
 data,bboxes,labels,no_objects,imagePaths = dataset.load_dataset(imageDir,annotDir)
 GT = GridTransform()
 bboxes_t,labels_t = GT.transform(bboxes,labels,no_objects)
