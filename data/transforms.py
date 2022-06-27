@@ -77,8 +77,8 @@ class GridTransform:
      as most of the time NMS transform is used. This function can be mainly used to visualize correct transform from dataset
     """
     def transform_from_grid(self,bboxes,labels,image):
-        bboxes = np.reshape(bboxes[0],(30,self.no_grids,self.no_grids))
-        labels = np.reshape(labels[0],(30,self.no_grids,self.no_grids))
+        bboxes = np.reshape(bboxes,(10,self.no_grids,self.no_grids))
+        labels = np.reshape(labels,(20,self.no_grids,self.no_grids))
 
         (h, w) = image.shape[:2]
         M = h//self.no_grids
@@ -100,7 +100,7 @@ class GridTransform:
                 for (col,j) in enumerate(i):
                     label_pos = np.argmax(labels[:20,row,col],axis=0)
                     class_score = j* labels[label_pos,row,col]
-                    if class_score > 0.25:
+                    if class_score > 0.5:
                         class_name = classes[label_pos]
                         cX_imag = col/self.no_grids + cx[row,col]/self.no_grids
                         cY_imag = row/self.no_grids + cy[row,col]/self.no_grids
@@ -223,7 +223,7 @@ class GridTransform:
     """
     Transform and visualize a prediction's bboxes using NMS
     """
-    def transform_with_nms(self,bboxes,labels,image,conf_thresh = 0.6,nms_iou_cutoff = 0.3):
+    def transform_with_nms(self,bboxes,labels,image,conf_thresh = 0.7,nms_iou_cutoff = 0.2):
         (h_img, w_img) = image.shape[:2]
         M = h_img//self.no_grids
         N = w_img//self.no_grids
@@ -294,11 +294,12 @@ class GridTransform:
             
             # draw the predicted bounding
             # ng box and class label on the image
-            y = startY - 10 if startY - 10 > 10 else startY + 10
-            image = cv2.circle(image, (int(cX_imag*w_img),int(cY_imag*h_img)), radius=3, color=(0, 0, 255), thickness=-1)
-            cv2.rectangle(image, (startX, startY), (endX, endY),
-                (0, 255, 0), 2)
-            cv2.putText(image, "{}:{:.2f} ".format(class_name,class_score), (startX, y), cv2.FONT_HERSHEY_SIMPLEX,	0.65, (0, 255, 0), 2)
+            if class_score>0.5:
+                y = startY - 10 if startY - 10 > 10 else startY + 10
+                image = cv2.circle(image, (int(cX_imag*w_img),int(cY_imag*h_img)), radius=3, color=(0, 0, 255), thickness=-1)
+                cv2.rectangle(image, (startX, startY), (endX, endY),
+                           (0, 255, 0), 2)
+                cv2.putText(image, "{}:{:.2f} ".format(class_name,class_score), (startX, y), cv2.FONT_HERSHEY_SIMPLEX,	0.65, (0, 255, 0), 2)
         return image
 
     """
