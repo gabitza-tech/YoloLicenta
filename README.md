@@ -12,4 +12,4 @@ If input size is changed from (224,224), the W and H in yolo_loss should also be
 # yolo_loss.py
 Update W and H when using different input size than (224,224), also update S when using other number of grids than 7.
 
-This application was created as a bachelor thesis project and as an education tool. Even though the code is thought for 20 classes, with minor tweekings it can be adapted for new datasets.
+This application was created as a bachelor thesis project and as an education tool. Even though the code is thought for 20 classes, with minor tweekings it can be adapted for new datasets. There are only 2 bounding box predictions per cell, but this can also be change by adapting the B variable and also changing some parts in the transforms file and the loss files.
