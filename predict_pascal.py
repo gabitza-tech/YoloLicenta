@@ -71,7 +71,7 @@ for (step,imagePath) in enumerate(imagePaths):
 
         image_test = cv2.imread(imagePath)
         
-	#Choose which tpe of transform based on the predictions to use
+	#Choose if predictions of bboxes should be displayed with or without NMS
         #image_final=GT.transform_from_grid(boxPred,classPred,image_test)
 
         image_final = GT.transform_with_nms(boxPred,classPred,image_test)
