@@ -77,8 +77,8 @@ class GridTransform:
      as most of the time NMS transform is used. This function can be mainly used to visualize correct transform from dataset
     """
     def transform_from_grid(self,bboxes,labels,image):
-        bboxes = np.reshape(bboxes,(10,self.no_grids,self.no_grids))
-        labels = np.reshape(labels,(20,self.no_grids,self.no_grids))
+        bboxes = np.reshape(bboxes,(self.B*5,self.no_grids,self.no_grids))
+        labels = np.reshape(labels,(len(classes),self.no_grids,self.no_grids))
 
         (h, w) = image.shape[:2]
         M = h//self.no_grids
@@ -98,7 +98,7 @@ class GridTransform:
             h_obj = bboxes[B*5+4,...]
             for (row,i) in enumerate(bboxes[B*5,...]):
                 for (col,j) in enumerate(i):
-                    label_pos = np.argmax(labels[:20,row,col],axis=0)
+                    label_pos = np.argmax(labels[:len(classes),row,col],axis=0)
                     class_score = j* labels[label_pos,row,col]
                     if class_score > 0.5:
                         class_name = classes[label_pos]
@@ -191,14 +191,14 @@ class GridTransform:
             box1 = bboxes[i]
             
             label1 = labels[i]
-            label_pos1 = np.argmax(label1[:20],axis=0)
+            label_pos1 = np.argmax(label1[:len(classes)],axis=0)
             
             for j in range(i+1, bboxes.shape[0]):
             
                 box2 = bboxes[j]
 
                 label2 = labels[j]
-                label_pos2 = np.argmax(label2[:20],axis=0)
+                label_pos2 = np.argmax(label2[:len(classes)],axis=0)
                 
                 iou = self.iou_value(box1[1:5], box2[1:5],initial_positions[i],initial_positions[j])
                 #print(initial_positions[i], " & ", initial_positions[j], "IOU: ", iou)
@@ -240,7 +240,7 @@ class GridTransform:
         # I concatenate the predictions from both bounding boxes and labels in a (5,98) shaped array (p,cx_cell,cy_cell,w,h)
         # so I can take in consideration both BBOX predictions
         concat_bboxes = np.concatenate((bboxes[:5,...],bboxes[5:10,...]),axis=1)
-        nms_labels = np.concatenate((labels[:20,...],labels[:20,...]),axis=1)
+        nms_labels = np.concatenate((labels[:len(classes),...],labels[:len(classes),...]),axis=1)
         
         filtered_conf_bboxes=[]
         filtered_labels = []
@@ -251,7 +251,7 @@ class GridTransform:
         for i in range(concat_bboxes.shape[1]):
             if concat_bboxes[0,i] > conf_thresh:
                 filtered_conf_bboxes.append(concat_bboxes[:5,i])
-                filtered_labels.append(nms_labels[:20,i])
+                filtered_labels.append(nms_labels[:len(classes),i])
                 initial_positions.append(i)
             else:
                 continue
@@ -278,7 +278,7 @@ class GridTransform:
             col = positions[i] % self.no_grids
             row = positions[i] // self.no_grids
 
-            label_pos = np.argmax(labels[:20,positions[i]],axis=0)
+            label_pos = np.argmax(labels[:len(classes),positions[i]],axis=0)
             confidence_score = box[0]
             class_score = confidence_score* labels[label_pos,positions[i]] # I can either show the confidence score or the class score
             class_name = classes[label_pos]
@@ -312,7 +312,7 @@ class GridTransform:
         # I concatenate the predictions from both bounding boxes and labels in a (5,98) shaped array (p,cx_cell,cy_cell,w,h)
         # so I can take in consideration both BBOX predictions
         concat_bboxes = np.concatenate((bboxes[:5,...],bboxes[5:10,...]),axis=1)
-        nms_labels = np.concatenate((labels[:20,...],labels[:20,...]),axis=1)
+        nms_labels = np.concatenate((labels[:len(classes),...],labels[:len(classes),...]),axis=1)
         
         filtered_conf_bboxes=[]
         filtered_labels = []
@@ -323,7 +323,7 @@ class GridTransform:
         for i in range(concat_bboxes.shape[1]):
             if concat_bboxes[0,i] > conf_thresh:
                 filtered_conf_bboxes.append(concat_bboxes[:5,i])
-                filtered_labels.append(nms_labels[:20,i])
+                filtered_labels.append(nms_labels[:len(classes),i])
                 initial_positions.append(i)
             else:
                 continue
@@ -358,7 +358,7 @@ class GridTransform:
             endX = (cx_imag+w_obj/2)
             endY = (cy_imag+h_obj/2)
 
-            label_pos = np.argmax(labels[:20,positions[i]],axis=0)
+            label_pos = np.argmax(labels[:len(classes),positions[i]],axis=0)
             confidence_score = box[0]
             
             """
@@ -390,14 +390,14 @@ class GridTransform:
     
         mAP_per_batch = np.float32(0.1)
 
-        y_true = np.reshape(y_true,(-1,30,self.no_grids*self.no_grids))
-        y_pred = np.reshape(y_pred,(-1,30,self.no_grids*self.no_grids))
+        y_true = np.reshape(y_true,(-1,len(classes)+self.B*5,self.no_grids*self.no_grids))
+        y_pred = np.reshape(y_pred,(-1,len(classes)+self.B*5,self.no_grids*self.no_grids))
 
-        pred_boxes = y_pred[:,20:,...]
-        pred_classes = y_pred[:,:20,...]
+        pred_boxes = y_pred[:,len(classes):,...]
+        pred_classes = y_pred[:,:len(classes),...]
 
-        true_boxes = y_true[:,20:,...]
-        true_classes =  y_true[:,:20,...]
+        true_boxes = y_true[:,len(classe):,...]
+        true_classes =  y_true[:,:len(classes),...]
 
         batch_pred_boxes = []
         for i in range(pred_boxes.shape[0]):
@@ -425,7 +425,7 @@ class GridTransform:
                 cx_imag = col/self.no_grids + cx/self.no_grids
                 cy_imag = row/self.no_grids + cy/self.no_grids
 
-                label_pos = np.argmax(true_classes[i,:20,j],axis=0)
+                label_pos = np.argmax(true_classes[i,:len(classes),j],axis=0)
                 
                 startX = (cx_imag-w_obj/2)
                 startY = (cy_imag-h_obj/2)
