@@ -6,19 +6,26 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import backend as K
 
-def yolo_loss(y_true, y_pred, H=224, W=224, S=7):
+
+classes = ['person' , 'bird', 'cat', 'cow',
+           'dog', 'horse', 'sheep', 'aeroplane',
+           'bicycle', 'boat', 'bus', 'car',
+           'motorbike', 'train', 'bottle', 'chair',
+           'diningtable', 'pottedplant', 'sofa', 'tvmonitor']
+
+def yolo_loss(y_true, y_pred, H=224, W=224, S=7,B=2):
     #prediction: batchsize x 30 x 7 x 7 , bboxes: batchsize x (21:25+26:30) x 7 x 7 , confidences: batchsize x (20+25) x 7 x 7 , class: batchsize x (0:20) x 7 x 7 
     #labels: batchsize x 25 x 7 x 7 , response_mask: batchsize x (20) x 7 x 7 , bbox: batchsize x (21:25) x 7 x 7 , class: batchsize x (:20) x 7 x 7 
-    y_pred = tf.reshape(y_pred,[-1,30,S,S])
-    y_true = tf.reshape(y_true,[-1,30,S,S])
+    y_pred = tf.reshape(y_pred,[-1,(len(classes)+B*5),S,S])
+    y_true = tf.reshape(y_true,[-1,(len(classes)+B*5),S,S])
     
-    pred_class = y_pred[:,:20,...] # batch x 20 x 7 x 7
-    pred_bboxes = tf.concat((tf.expand_dims(y_pred[:,21:25,...],axis=1),tf.expand_dims(y_pred[:,26:30,...],axis=1)),axis=1) # batch x 2 x 4 x 7 x 7
-    pred_confidence = tf.concat((tf.expand_dims(y_pred[:,20,...],axis=1),tf.expand_dims(y_pred[:,25,...],axis=1)),axis=1) # batch x 2 x 7 x 7
+    pred_class = y_pred[:,:len(classes),...] # batch x 20 x 7 x 7
+    pred_bboxes = tf.concat((tf.expand_dims(y_pred[:,len(classes)+1:len(classes)+5,...],axis=1),tf.expand_dims(y_pred[:,len(classes)+6:len(classes)+10,...],axis=1)),axis=1) # batch x 2 x 4 x 7 x 7
+    pred_confidence = tf.concat((tf.expand_dims(y_pred[:,len(classes),...],axis=1),tf.expand_dims(y_pred[:,len(classes)+5,...],axis=1)),axis=1) # batch x 2 x 7 x 7
 
-    label_class = y_true[:,:20,...] #batch x 20 x 7 x 7
-    label_bboxes = tf.reshape(tf.tile(y_true[:,21:25,...],multiples=[1,2,1,1]),[-1,2,4,S,S]) #batch x 2 x 4 x 7 x 7
-    label_mask = y_true[:,20:21,...] #batch x 1  x 7 x 7
+    label_class = y_true[:,:len(classes),...] #batch x 20 x 7 x 7
+    label_bboxes = tf.reshape(tf.tile(y_true[:,len(classes)+1:len(classes)+5,...],multiples=[1,2,1,1]),[-1,2,4,S,S]) #batch x 2 x 4 x 7 x 7
+    label_mask = y_true[:,len(classes):len(classes)+1,...] #batch x 1  x 7 x 7
 
     #K.print_tensor(tf.shape(pred_class))
     #K.print_tensor(tf.shape(pred_bboxes))
