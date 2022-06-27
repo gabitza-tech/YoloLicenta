@@ -70,7 +70,7 @@ for (step,imagePath) in enumerate(imagePaths):
         classPred = prediction[:20,...]
 
         image_test = cv2.imread(imagePath)
-        
+        #Choose which type of visualization you want: without or with nms
         #image_final=GT.transform_from_grid(boxPred,classPred,image_test)
 
         image_final = GT.transform_with_nms(boxPred,classPred,image_test)
