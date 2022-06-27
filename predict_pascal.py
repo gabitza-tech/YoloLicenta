@@ -1,19 +1,23 @@
+from data.yolo_loss import yolo_loss
+from data.data import VOCdataset
+from data.transforms import GridTransform
+from data.losses import YoloLoss,class_loss,box_loss,obj_loss,noobj_loss
+
+
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.models import load_model
-from data.data import VOCdataset
-from data.transforms import GridTransform
-from data.losses import YoloLoss
+from tensorflow.keras.utils import plot_model
+import tensorflow as tf
+from tensorflow.keras.applications.resnet import preprocess_input
+
 import numpy as np
 import mimetypes
 import argparse
-import imutils
 import pickle
 import cv2
 import os
 import time
-from tensorflow.keras.utils import plot_model
-import tensorflow as tf
 
 classes = ['person' , 'bird', 'cat', 'cow',
            'dog', 'horse', 'sheep', 'aeroplane',
@@ -36,36 +40,48 @@ GT = GridTransform(B,no_grids)
 fps_inference = []
 
 print("Load trained model")
-model = load_model('output/best_model_retry.hdf5', custom_objects = {"YoloLoss":YoloLoss,"mAP":GT.mAP})
+model = load_model('output/7x7epoch250loss3p37.hdf5', custom_objects = {"yolo_loss":yolo_loss,"mAP":GT.mAP})
 #plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
 
-
+"""
+When using the test.txt file: uncomment lines 49,51,58 and comment line 50.
+"""
+#testPaths = 'dataset/testImages'
 for (step,imagePath) in enumerate(imagePaths):
-    if step ==600:
+#for (step, imagePath) in enumerate(os.listdir(testPaths)):
+    if step ==200:
         break
+        #continue
     else:
         start = time.time()
         
-        # load the input image (in Keras format) from disk and preprocess
-        # it, scaling the pixel intensities to the range [0, 1]
+        #imagePath = os.path.join(testPaths,imagePath) 
         image = load_img(imagePath, target_size=(224, 224))
-        image = img_to_array(image) / 255.0
+        image = img_to_array(image)
+        image = preprocess_input(image)
         image = np.expand_dims(image, axis=0)
+        
         # predict the bounding box of the object along with the class label
         prediction = model.predict(image)
         
-        prediction = np.reshape(prediction[0],(30,no_grids,no_grids))
+        prediction = np.reshape(prediction[0],(30,no_grids*no_grids))
         
         boxPred = prediction[20:30,...]
         classPred = prediction[:20,...]
+
+        image_test = cv2.imread(imagePath)
         
-        image1 = cv2.imread(imagePath)
-        output_path = 'images_pred/val_nms/image_{}.jpg'.format(step)
-        #image=GT.transform_from_grid(boxPred,classPred,image1)
-        image_final = GT.transform_with_nms(boxPred,classPred,image1)
+	#Choose which tpe of transform based on the predictions to use
+        #image_final=GT.transform_from_grid(boxPred,classPred,image_test)
+
+        image_final = GT.transform_with_nms(boxPred,classPred,image_test)
+
+        output_path = 'images_pred/test_nms/image_{}.jpg'.format(step)
+
         #cv2.imshow('Image',image_final)
         cv2.imwrite(output_path,image_final)
         fps_inference.append(1/(time.time() - start))
+
 print("Mean FPS value of inference is: {}".format(sum(fps_inference)/len(fps_inference)))    
         
         
