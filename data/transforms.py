@@ -91,7 +91,7 @@ class GridTransform:
                 tiles = image[y:y+M,x:x+N]
                 cv2.rectangle(image, (x, y), (x1, y1), (100, 100, 100))
 
-        for B in range(2):
+        for B in range(self.B):
             cx = bboxes[B*5+1,...]
             cy = bboxes[B*5+2,...]
             w_obj = bboxes[B*5+3,...]
