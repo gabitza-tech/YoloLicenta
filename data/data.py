@@ -18,15 +18,16 @@ classes = ['person' , 'bird', 'cat', 'cow',
            'diningtable', 'pottedplant', 'sofa', 'tvmonitor']
 
 class VOCdataset:
-    def __init__(self):            
+    def __init__(self,w,h):            
         self.bboxes = []
         self.data = []
         self.no_objects = []
         self.labels = []
         self.imagePaths = []
         self.break_count = 0
-        self.width_image = 224
-        self.height_image = 224
+        self.width_image = w
+        self.height_image = h
+
 
     def read_content(self,xml_file:str):
         tree = ET.parse(xml_file)
@@ -80,10 +81,12 @@ class VOCdataset:
                 no_objects_per_image = no_objects_per_image + 1
 
                 #startY = bbox[2] - 10 if bbox[2]>10 else bbox[2] + 10
-                #cv2.putText(image, label_bbox1,(bbox[1],startY), cv2.FONT_HERSHEY_SIMPLEX,
-  	            #        0.65, (0, 255, 0), 2)
+                #cv2.putText(image, label_name,(bbox[1],startY), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 0), 2)
                 #cv2.rectangle(image,(bbox[1],bbox[2]),(bbox[3],bbox[4]),(0,255,0),1)
-            
+     
+            #cv2.imshow('',image)
+            #cv2.waitKey(0)
+
             image = load_img(imagePath, target_size=(self.width_image, self.height_image))
             image = img_to_array(image)
 
@@ -93,10 +96,7 @@ class VOCdataset:
             self.data.append(image)
             self.imagePaths.append(imagePath)
              
-            #cv2.imshow('',image)
-            #cv2.waitKey(0)
-            
-    
+
             # to limit the amount of images read from the dataset
             self.break_count = self.break_count+1
             if self.break_count%100 == 0:
@@ -113,7 +113,7 @@ class VOCdataset:
                 max = i
         print("Maximum number of objects in an image: {}".format(max))
 
-        self.data = np.array(self.data,dtype="float32")/255
+        self.data = np.array(self.data,dtype="float32")
         self.no_objects = np.array(self.no_objects)
 
         
@@ -128,7 +128,7 @@ bboxes = []
 labels = []
 no_objects = []
 
-dataset = VOCdataset()
+dataset = VOCdataset(224,224)
 data,bboxes,labels,no_objects,imagePaths = dataset.load_dataset(imageDir,annotDir)
 
 #print(data.shape)
