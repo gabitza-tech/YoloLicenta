@@ -1,3 +1,5 @@
+#YOLOv1 in Tensorflow 2.4 and Keras 2.6
+The YOLOv1 algorithm implemented in Tensorflow 2.4 and Keras 2.6, with a network architecture consisting of a pretrained network and a fully connected head from Keras applications architectures. Image augmentation was not used in this project and for good validation/test results it is needed to use image augmentation. In the future, image augmentation will be implemented.
 # YoloLicenta
 Weights trained on ResNet50 with the YoloLoss loss from losses.py: https://drive.google.com/file/d/1NwRcqHB_dGR5gqqtt_YHrHgSwbqGOObj/view?usp=sharing
 The hdf5 file should be placed in output folder.
