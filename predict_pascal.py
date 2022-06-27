@@ -40,7 +40,8 @@ GT = GridTransform(B,no_grids)
 fps_inference = []
 
 print("Load trained model")
-model = load_model('output/x.hdf5', custom_objects = {"yolo_loss":yolo_loss,"mAP":GT.mAP})
+#model = load_model('output/x.hdf5', custom_objects = {"yolo_loss":yolo_loss,"mAP":GT.mAP})
+model = load_model('output/7x7epoch250loss3p37.hdf5', custom_objects = {"YoloLoss":YoloLoss})
 #plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
 
 """
@@ -57,9 +58,9 @@ for (step,imagePath) in enumerate(imagePaths):
         
         #imagePath = os.path.join(testPaths,imagePath) 
         image = load_img(imagePath, target_size=(224, 224))
-        image = img_to_array(image)
+        image = img_to_array(image)/255
 	#Preprocess the images before feeding them to the network as they were preprocessed when training
-        image = preprocess_input(image)
+        #image = preprocess_input(image)
         image = np.expand_dims(image, axis=0)
         
         # predict the bounding box of the object along with the class label
