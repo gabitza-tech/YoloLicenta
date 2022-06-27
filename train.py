@@ -159,7 +159,7 @@ head = Flatten()(model.output)
 head = Dense(1024, name = 'fc1')(head)
 head = LeakyReLU(0.1)(head)
 head = Dropout(0.3)(head)
-head = Dense(30*no_grids*no_grids,activation = 'sigmoid', name='out')(head)
+head = Dense((len(classes)+B*5)*no_grids*no_grids,activation = 'sigmoid', name='out')(head)
 
 detector = Model(inputs=model.input,outputs = head)
 
