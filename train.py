@@ -4,11 +4,6 @@ from data.transforms import GridTransform
 from data.losses import YoloLoss,class_loss,box_loss,obj_loss,noobj_loss
 from data.yolo_loss import yolo_loss
 
-#functions for OneCyclePolicy
-from data.callback import SGDR
-from CLR.clr_callback import CyclicLR
-from clr import LRFinder
-
 import time
 import tempfile
 from sklearn.model_selection import train_test_split
