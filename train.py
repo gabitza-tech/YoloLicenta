@@ -15,6 +15,7 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import cv2
 
 from tensorflow import keras
 import tensorflow as tf
@@ -85,6 +86,16 @@ bboxes_grids,labels_grids = GT.transform(bboxes,labels,no_objects)
 #print(bboxes_grids.shape)
 #print(labels_grids.shape)
 
+"""
+Test to see if the transformations are correct
+"""
+image_ex = cv2.imread(imagePaths[13])
+cv2.imshow('Image example',GT.transform_from_grid(bboxes_grids[13],labels_grids[13],image_ex))
+k = cv2.waitKey(0)
+#print(k)
+if k == 27:  # close on ESC key
+    cv2.destroyAllWindows()
+
 data = preprocess_input(data) # keras preprocessing for pretrained model
 
 """
@@ -139,8 +150,6 @@ def add_regularization(model, regularizer=tf.keras.regularizers.l2(weight_decay)
 
 #model = MobileNetV2(include_top=False,weights='imagenet',input_shape=(224,224,3))
 model = ResNet50(include_top=False,weights='imagenet', input_shape=(224,224,3))
-
-
 
 model = add_regularization(model)
 
