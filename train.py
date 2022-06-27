@@ -41,6 +41,7 @@ from tensorflow.keras.applications.resnet import ResNet50
 
 """
 Preprcessing
+Depending on the pretrained network used, change the preprocessing
 """
 #from tensorflow.keras.applications.inception_v3 import preprocess_input
 from tensorflow.keras.applications.resnet import preprocess_input
@@ -68,6 +69,9 @@ no_objects = []
 imagePaths = []
 """
 Loading data from PascalVOC2012 dataset
+DEPENDING ON THE INPUT SIZE OF THE NETWORK, CHANGE THE INPUT OF VOCdataset function
++ 
+Change in yolo_loss the input size from 224,224 default to the new wanted size
 """
 dataset = VOCdataset(224,224)
 data,bboxes,labels,no_objects, imagePaths = dataset.load_dataset(imageDir,annotDir)
