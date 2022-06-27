@@ -73,8 +73,13 @@ class GridTransform:
 
     """
     Transform and visualize a prediction's bboxes without using NMS
+    The shape of the bboxes and labels is (30,7,7). When transforming with nms they are (30,49). This was left as it is because it didn't affect much,
+     as most of the time NMS transform is used. This function can be mainly used to visualize correct transform from dataset
     """
     def transform_from_grid(self,bboxes,labels,image):
+        bboxes = np.reshape(bboxes[0],(30,self.no_grids,self.no_grids))
+        labels = np.reshape(labels[0],(30,self.no_grids,self.no_grids))
+
         (h, w) = image.shape[:2]
         M = h//self.no_grids
         N = w//self.no_grids
@@ -218,7 +223,7 @@ class GridTransform:
     """
     Transform and visualize a prediction's bboxes using NMS
     """
-    def transform_with_nms(self,bboxes,labels,image,conf_thresh = 0.5,nms_iou_cutoff = 0.3):
+    def transform_with_nms(self,bboxes,labels,image,conf_thresh = 0.6,nms_iou_cutoff = 0.3):
         (h_img, w_img) = image.shape[:2]
         M = h_img//self.no_grids
         N = w_img//self.no_grids
