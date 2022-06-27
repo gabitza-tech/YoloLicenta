@@ -68,7 +68,7 @@ for (step,imagePath) in enumerate(imagePaths):
         
         prediction = np.reshape(prediction[0],((len(classes)+B*5),no_grids*no_grids))
         
-        boxPred = prediction[len(classes):30,...]
+        boxPred = prediction[len(classes):len(classes)+B*5,...]
         classPred = prediction[:len(classes),...]
 
         image_test = cv2.imread(imagePath)
