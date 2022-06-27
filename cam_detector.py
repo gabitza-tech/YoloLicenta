@@ -50,11 +50,11 @@ while True:
     # predict the bounding box of the object along with the class label
     prediction = model.predict(image_p)
     #print(prediction.shape)
-    prediction = np.reshape(prediction[0],(30,no_grids*no_grids))
+    prediction = np.reshape(prediction[0],((len(classes)+B*5),no_grids*no_grids))
     #print(prediction.shape)
 
-    boxPred = prediction[20:30,...]       
-    classPred = prediction[:20,...]
+    boxPred = prediction[len(classes):(len(classes)+B*5),...]       
+    classPred = prediction[:len(classes),...]
 
     (h, w) = frame.shape[:2]
     
