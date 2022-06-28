@@ -194,7 +194,7 @@ tensorboard = TensorBoard(log_dir='logs/{}'.format(tensorboardname))
 
 #lrate = LearningRateScheduler(warm,verbose=1) # Create a LRscheduler for warm-up and then training
 
-reduce_lr = ReduceLROnPlateau(monitor='val_loss',factor=0.1,min_delta=0.001,patience=3,verbose=1)
+reduce_lr = ReduceLROnPlateau(monitor='val_loss',factor=0.5,min_delta=0.001,patience=6,verbose=1)
 
 early_stop= EarlyStopping(monitor='loss',min_delta=0.001,mode='min',patience = 7)
 
@@ -211,7 +211,7 @@ Recommended: yolo_loss.py
 # initialize the optimizer, compile the model, and show the model
 # summary
 
-lr = 1e-3# primu 9e-5
+lr = 1e-4# primu 9e-5
 #opt = Adam(learning_rate=lr)
 opt = SGD(lr=lr,momentum=0.9,nesterov= True)
 detector.compile(loss=yolo_loss, optimizer=opt, metrics=[GT.mAP]) #Otherwise, use loss=loss if using the loss from losses.py
