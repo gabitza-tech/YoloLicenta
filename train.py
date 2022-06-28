@@ -28,20 +28,20 @@ from tensorflow.keras import backend as K
 """
 Pretrained networks
 """
-from tensorflow.keras.applications.resnet import ResNet50
+#from tensorflow.keras.applications.resnet import ResNet50
 #from tensorflow.keras.applications import ResNet50V2
 #from tensorflow.keras.applications import InceptionV3
 #from tensorflow.keras.applications import MobileNetV2
-#from tensorflow.keras.applications import EfficientNetB0
+from tensorflow.keras.applications import EfficientNetB0
 
 """
 Preprcessing
 Depending on the pretrained network used, change the preprocessing
 """
 #from tensorflow.keras.applications.inception_v3 import preprocess_input
-from tensorflow.keras.applications.resnet import preprocess_input
+#from tensorflow.keras.applications.resnet import preprocess_input
 #from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
-#from tensorflow.keras.applications.efficientnet import preprocess_input
+from tensorflow.keras.applications.efficientnet import preprocess_input
 
 """
 Callbacks and plotter
@@ -147,8 +147,9 @@ def add_regularization(model, regularizer=tf.keras.regularizers.l2(weight_decay)
     model.load_weights(tmp_weights_path, by_name=True)
     return model
 
-#model = MobileNetV2(include_top=False,weights='imagenet',input_shape=(224,224,3))
+model = MobileNetV2(include_top=False,weights='imagenet',input_shape=(224,224,3))
 model = ResNet50(include_top=False,weights='imagenet', input_shape=(224,224,3))
+model = EfficientNetB0(include_top=False,weights='imagenet', input_shape=(224,224,3))
 
 model = add_regularization(model)
 
@@ -159,9 +160,7 @@ head = Flatten()(model.output)
 head = Dense(1024, name = 'fc1')(head)
 head = LeakyReLU(0.1)(head)
 head = Dropout(0.3)(head)
-head = Dense((len(classes)+B*5)*no_grids*no_grids,activation = 'sigmoid', name='out')(head)
-
-detector = Model(inputs=model.input,outputs = head)
+head = Dense(30*no_grids*no_grids,activation = 'sigmoid', name='out')(head)
 
 """
 
