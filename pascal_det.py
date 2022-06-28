@@ -10,21 +10,26 @@ from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.models import load_model
 from data.transforms import GridTransform
 from data.losses import YoloLoss
-
+from data.yolo_loss import yolo_loss
 from std_msgs.msg import String
 
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 
-import cv2
-model = load_model('models/7x7epoch250loss3p37.hdf5', custom_objects = {"YoloLoss":YoloLoss})
+from tensorflow.keras.applications.efficientnet import preprocess_input
 
-bridge = CvBridge()
-cnt = 0
+import cv2
 
 no_grids=7
 B=2
 GT = GridTransform(B,no_grids)
+
+
+model = load_model('output/inception.hdf5', custom_objects = {"yolo_loss":yolo_loss,"mAP":GT.mAP})
+
+bridge = CvBridge()
+cnt = 0
+
 
 def imgmsg_to_cv2(msg):
     #print(img_msg)
@@ -47,7 +52,8 @@ def imgmsg_to_cv2(msg):
     cv2_img = bridge.imgmsg_to_cv2(msg, "bgr8")
     (h_init,w_init) = cv2_img.shape[:2]
     image = cv2.resize(cv2_img, (224,224), interpolation = cv2.INTER_AREA)
-    image = img_to_array(image) / 255.0
+    image = img_to_array(image) 
+    image = preprocess_input(image)
     image = np.expand_dims(image, axis=0)
     
     # predict the bounding box of the object along with the class label
@@ -55,7 +61,7 @@ def imgmsg_to_cv2(msg):
     #print(prediction.shape)
     print("predicted")
     cnt = cnt +1 
-    prediction = np.reshape(prediction[0],(30,no_grids,no_grids))
+    prediction = np.reshape(prediction[0],(30,no_grids*no_grids))
     #print(prediction.shape)
 
     boxPred = prediction[20:30,...]       
@@ -63,7 +69,6 @@ def imgmsg_to_cv2(msg):
     #print(boxPred.shape)
     #print(boxPred[0,...])
     #print(boxPred[5])
-    output_path = 'output/test_nms'
     image_final = GT.transform_with_nms(boxPred,classPred,cv2_img)
 
     image_to_ros = cv2.resize(image_final,(w_init,h_init), interpolation = cv2.INTER_AREA)
@@ -71,7 +76,7 @@ def imgmsg_to_cv2(msg):
 
     pubDetections.publish(ret_msg)
     # Save your OpenCV2 image as a jpeg
-    cv2.imwrite('saved_images/camera_new_image_{}.jpeg'.format(cnt), image_final)
+    #cv2.imwrite('tiago_images/camera_new_image_{}.jpeg'.format(cnt), image_final)
     
 
 
