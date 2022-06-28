@@ -91,7 +91,7 @@ class GridTransform:
                 tiles = image[y:y+M,x:x+N]
                 cv2.rectangle(image, (x, y), (x1, y1), (100, 100, 100))
 
-        for B in range(self.B):
+        for B in range(2):
             cx = bboxes[B*5+1,...]
             cy = bboxes[B*5+2,...]
             w_obj = bboxes[B*5+3,...]
@@ -223,7 +223,7 @@ class GridTransform:
     """
     Transform and visualize a prediction's bboxes using NMS
     """
-    def transform_with_nms(self,bboxes,labels,image,conf_thresh = 0.7,nms_iou_cutoff = 0.2):
+    def transform_with_nms(self,bboxes,labels,image,conf_thresh = 0.4,nms_iou_cutoff = 0.2,class_score_thresh = 0.4):
         (h_img, w_img) = image.shape[:2]
         M = h_img//self.no_grids
         N = w_img//self.no_grids
@@ -294,7 +294,7 @@ class GridTransform:
             
             # draw the predicted bounding
             # ng box and class label on the image
-            if class_score>0.5:
+            if class_score > class_score_thresh:
                 y = startY - 10 if startY - 10 > 10 else startY + 10
                 image = cv2.circle(image, (int(cX_imag*w_img),int(cY_imag*h_img)), radius=3, color=(0, 0, 255), thickness=-1)
                 cv2.rectangle(image, (startX, startY), (endX, endY),
